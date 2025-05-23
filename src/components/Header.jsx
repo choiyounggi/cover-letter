@@ -17,7 +17,7 @@ const Header = () => {
   return (
     <header className="header">
       <div className="header-container">
-        <h1 className="header-title">My Introduction</h1>
+        <h1 className="header-title">최영기 자기소개서</h1>
         <button className="mobile-menu-toggle" onClick={toggleMenu}>
           {menuOpen ? '✕' : '☰'}
         </button>

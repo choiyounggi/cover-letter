@@ -9,10 +9,42 @@
 }
 
 .contact-info {
-  background-color: #1a1a1a;
+  background-color: #ffffff;
   padding: 2rem;
-  border-radius: 8px;
+  border-radius: 12px;
   width: 100%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f0f0f0;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.contact-info:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+.contact-info h3 {
+  color: #4a90e2;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  position: relative;
+  padding-bottom: 0.75rem;
+}
+
+.contact-info h3::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 50px;
+  height: 2px;
+  background-color: #4a90e2;
+}
+
+.contact-info p {
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 1rem;
 }
 
 .contact-form {
@@ -31,33 +63,45 @@
 
 .form-group label {
   font-weight: 500;
+  color: #333;
 }
 
 .form-group input,
 .form-group textarea {
-  padding: 0.75rem;
-  border-radius: 4px;
-  border: 1px solid #333;
-  background-color: #1a1a1a;
-  color: #ffffff;
+  padding: 0.85rem;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  background-color: #ffffff;
+  color: #333;
   font-family: inherit;
   width: 100%;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
 }
 
 .submit-btn {
-  padding: 0.75rem 1.5rem;
-  background-color: #646cff;
+  padding: 0.85rem 2rem;
+  background-color: #4a90e2;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
   align-self: flex-start;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .submit-btn:hover {
-  background-color: #535bf2;
+  background-color: #2a6fc7;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 @media (max-width: 992px) {
@@ -69,6 +113,10 @@
 @media (max-width: 768px) {
   .contact-content {
     grid-template-columns: 1fr;
+  }
+  
+  .contact-info {
+    margin-bottom: 1rem;
   }
 }
 
@@ -83,6 +131,11 @@
   
   .form-group input,
   .form-group textarea {
-    padding: 0.6rem;
+    padding: 0.7rem;
+  }
+  
+  .submit-btn {
+    padding: 0.75rem 1.5rem;
+    width: 100%;
   }
 }

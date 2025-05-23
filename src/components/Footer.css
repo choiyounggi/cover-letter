@@ -1,15 +1,17 @@
 .footer {
-  background-color: #1a1a1a;
+  background-color: #ffffff;
   padding: 2rem 0;
   margin-top: auto;
   width: 100%;
+  border-top: 1px solid #f0f0f0;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.03);
 }
 
 .footer-container {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -17,8 +19,9 @@
 }
 
 .copyright {
-  color: #ffffff;
+  color: #666666;
   margin: 0;
+  font-size: 0.95rem;
 }
 
 .social-links {
@@ -27,13 +30,31 @@
 }
 
 .social-links a {
-  color: #ffffff;
+  color: #555555;
   text-decoration: none;
-  transition: color 0.3s ease;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  position: relative;
+  padding: 0.25rem 0;
+}
+
+.social-links a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background-color: #4a90e2;
+  transition: width 0.3s ease;
 }
 
 .social-links a:hover {
-  color: #646cff;
+  color: #4a90e2;
+}
+
+.social-links a:hover::after {
+  width: 100%;
 }
 
 @media (max-width: 768px) {

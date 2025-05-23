@@ -7,9 +7,10 @@ const Footer = () => {
       <div className="footer-container">
         <p className="copyright">© {new Date().getFullYear()} My Portfolio. All rights reserved.</p>
         <div className="social-links">
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a>
-          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">Twitter</a>
+          <a href="https://github.com/choiyounggi" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="https://velog.io/@dch0202/posts" target="_blank" rel="noopener noreferrer">velog</a>
+          <a href="https://www.linkly.kr/signin" target="_blank" rel="noopener noreferrer">LinklyChat</a>
+          <a href="https://www.linkly.kr/n8n" target="_blank" rel="noopener noreferrer">n8n</a>
         </div>
       </div>
     </footer>

@@ -12,18 +12,27 @@
 .skill-category {
   flex: 1;
   min-width: 250px;
-  background-color: #1a1a1a;
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-top: 4px solid #4a90e2;
+}
+
+.skill-category:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
 .skill-category h3 {
   margin-top: 0;
-  color: #646cff;
-  border-bottom: 2px solid #333;
-  padding-bottom: 0.5rem;
-  margin-bottom: 1rem;
+  color: #4a90e2;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.5px;
 }
 
 .skill-list {
@@ -33,16 +42,25 @@
 }
 
 .skill-list li {
-  padding: 0.5rem 0;
+  padding: 0.75rem 0;
   position: relative;
-  padding-left: 1.5rem;
+  padding-left: 1.75rem;
+  color: #444;
+  font-size: 1.05rem;
+  transition: transform 0.2s ease;
+}
+
+.skill-list li:hover {
+  transform: translateX(5px);
+  color: #333;
 }
 
 .skill-list li::before {
   content: '▹';
   position: absolute;
   left: 0;
-  color: #646cff;
+  color: #4a90e2;
+  font-size: 1.2rem;
 }
 
 @media (max-width: 992px) {
@@ -58,15 +76,20 @@
   
   .skill-category {
     width: 100%;
+    margin-bottom: 1.5rem;
+  }
+  
+  .skill-category:last-child {
+    margin-bottom: 0;
   }
 }
 
 @media (max-width: 480px) {
   .skill-category {
-    padding: 1rem;
+    padding: 1.5rem;
   }
   
   .skill-list li {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
   }
 }

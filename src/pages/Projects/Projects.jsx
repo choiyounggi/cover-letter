@@ -6,24 +6,24 @@ const Projects = () => {
     <main className="page-container">
       <section className="section projects-section">
         <div className="container">
-          <h2 className="section-title">Featured Projects</h2>
+          <h2 className="section-title">Projects</h2>
           <div className="projects-grid">
             <div className="project-card">
-              <div className="project-image">Project 1 Image</div>
-              <h3>Project One</h3>
-              <p>A brief description of the project, what technologies were used, and what problems it solves.</p>
+              <div className="project-image">프로젝트1</div>
+              <h3>프로젝트명1</h3>
+              <p>서브타이틀1</p>
               <div className="project-links">
-                <a href="#" className="project-link">View Demo</a>
-                <a href="#" className="project-link">Source Code</a>
+                <a href="#" className="project-link">링크1-1</a>
+                <a href="#" className="project-link">링크1-2</a>
               </div>
             </div>
             <div className="project-card">
-              <div className="project-image">Project 2 Image</div>
-              <h3>Project Two</h3>
-              <p>A brief description of the project, what technologies were used, and what problems it solves.</p>
+              <div className="project-image">프로젝트 2</div>
+              <h3>프로젝트명2</h3>
+              <p>서브타이틀2</p>
               <div className="project-links">
-                <a href="#" className="project-link">View Demo</a>
-                <a href="#" className="project-link">Source Code</a>
+                <a href="#" className="project-link">링크2-1</a>
+                <a href="#" className="project-link">링크2-2</a>
               </div>
             </div>
           </div>
