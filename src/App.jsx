@@ -1,5 +1,5 @@
 import React from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, BrowserRouter } from 'react-router-dom'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import About from '@/pages/About/About'
@@ -10,7 +10,7 @@ import '@/App.css'
 
 function App() {
   return (
-    <Router>
+    <BrowserRouter basename="/cover-letter">
       <div className="app">
         <Header />
         <div className="content">
@@ -24,7 +24,7 @@ function App() {
         </div>
         <Footer />
       </div>
-    </Router>
+    </BrowserRouter>
   )
 }
 

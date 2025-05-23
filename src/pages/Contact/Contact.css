@@ -85,6 +85,41 @@
   box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
 }
 
+.email-input-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.email-input-container input,
+.email-input-container select {
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 10px 12px;
+  font-family: 'Montserrat', 'Noto Sans KR', sans-serif;
+  font-size: 14px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.email-input-container input:focus,
+.email-input-container select:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.email-at {
+  font-weight: 500;
+  color: #555;
+  margin: 0 2px;
+}
+
+.email-input-container select {
+  background-color: white;
+  cursor: pointer;
+}
+
 .submit-btn {
   padding: 0.85rem 2rem;
   background-color: #4a90e2;
