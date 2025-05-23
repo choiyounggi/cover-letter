@@ -39,8 +39,8 @@ const Contact = () => {
       message
     });
 
-    if (res.msg) {
-      alert(res.msg);
+    if (res.data.msg) {
+      alert('스카웃 제의에 성공했습니다. 빠른시일 내에 답변 드리겠습니다.');
       setCompany('');
       setName('');
       setPhone('');
