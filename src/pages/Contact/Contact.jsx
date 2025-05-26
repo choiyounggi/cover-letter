@@ -39,7 +39,7 @@ const Contact = () => {
       message
     });
 
-    if (res.data.msg) {
+    if (res.msg) {
       alert('스카웃 제의에 성공했습니다. 빠른시일 내에 답변 드리겠습니다.');
       setCompany('');
       setName('');
@@ -155,7 +155,7 @@ const Contact = () => {
                   onChange={(e) => setMessage(e.target.value)}
                 />
               </div>
-              <button type="submit" className="submit-btn" onClick={submit}>전송</button>
+              <button type="button" className="submit-btn" onClick={() => submit()}>전송</button>
             </form>
           </div>
         </div>

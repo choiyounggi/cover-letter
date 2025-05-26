@@ -9,10 +9,10 @@ const useContact = () => {
           method: 'POST',
           data: payload
         });
-  
-        return res;
+        
+        return res.data;
       } catch (error) {
-        console.log('error', error?.message);
+        console.error('❌ 요청 실패:', error.message);
         alert('스카웃 제의에 실패했습니다. 연락처로 직접 연락주세요.');
         return false;
       }
