@@ -1,2 +1,5 @@
 # cover-letter
-리액트 기반 자기소개서 웹 페이지
+
+**English** | [한국어](README.ko.md)
+
+A React-based personal cover-letter (자기소개서) web page.
