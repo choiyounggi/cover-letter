@@ -18,18 +18,20 @@ export const saveSettingsAction = adminAction(async (_prev: ActionState, fd: For
   const chatId = String(fd.get("chatId") ?? "");
   const ogImageUrl = String(fd.get("ogImageUrl") ?? "");
 
-  if (botToken) {
+  const shouldWriteBotToken = botToken !== "";
+  if (shouldWriteBotToken) {
     const parsed = settingInputSchema.safeParse({ key: "telegram.botToken", value: botToken });
     if (!parsed.success) return settingFieldError("botToken", parsed.error);
-    await setSetting("telegram.botToken", botToken);
   }
 
   const chatIdParsed = settingInputSchema.safeParse({ key: "telegram.chatId", value: chatId });
   if (!chatIdParsed.success) return settingFieldError("chatId", chatIdParsed.error);
-  await setSetting("telegram.chatId", chatId);
 
   const ogImageParsed = settingInputSchema.safeParse({ key: "site.ogImageUrl", value: ogImageUrl });
   if (!ogImageParsed.success) return settingFieldError("ogImageUrl", ogImageParsed.error);
+
+  if (shouldWriteBotToken) await setSetting("telegram.botToken", botToken);
+  await setSetting("telegram.chatId", chatId);
   await setSetting("site.ogImageUrl", ogImageUrl);
 
   revalidateAdmin("/admin/settings");

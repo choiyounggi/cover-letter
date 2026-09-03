@@ -94,6 +94,17 @@ describe("saveSettingsAction", () => {
     expect(result.fieldErrors?.value).toBeUndefined();
     expect(mocks.setSetting).not.toHaveBeenCalled();
   });
+
+  it("validates all fields before writing any: an invalid chatId blocks the already-valid botToken from being saved (D2)", async () => {
+    const fd = new FormData();
+    fd.set("botToken", "654321:ZZZZZZ");
+    fd.set("chatId", "x".repeat(2001));
+    fd.set("ogImageUrl", "");
+    const result = await saveSettingsAction({ status: "idle" }, fd);
+    if (result.status !== "error") throw new Error("expected error status");
+    expect(result.fieldErrors?.chatId?.length).toBeGreaterThan(0);
+    expect(mocks.setSetting).not.toHaveBeenCalled();
+  });
 });
 
 describe("sendTestTelegramAction", () => {

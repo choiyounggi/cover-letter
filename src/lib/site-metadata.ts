@@ -15,7 +15,7 @@ export function buildMetadata(
       : profile.title
     : FALLBACK_DESCRIPTION;
 
-  const metadata: Metadata = { title, description };
+  const metadata: Metadata = { title: { absolute: title }, description };
 
   if (opts.siteUrl) {
     try {
