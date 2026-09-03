@@ -1,25 +1,26 @@
-# Logs
-logs
+# deps / build
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# env — keep the template
+.env
+.env.*
+!.env.example
+
+# logs / os / editor
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-.idea
-
-# Editor directories and files
+.DS_Store
+.idea/
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+
+# orchestration artifacts (never committed)
+.orchestration/
+.worktrees/
+.dev-loop/
+src/generated/
+.gstack/
