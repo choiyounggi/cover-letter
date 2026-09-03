@@ -23,3 +23,4 @@ next-env.d.ts
 .worktrees/
 .dev-loop/
 src/generated/
+.gstack/
