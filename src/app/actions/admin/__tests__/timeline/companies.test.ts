@@ -87,6 +87,17 @@ describe("updateCompanyAction", () => {
     expect(result.status).toBe("ok");
     expect(mocks.updateCompany).toHaveBeenCalledWith("1", expect.objectContaining({ name: "Acme Inc" }));
   });
+
+  it("converts the hidden sortOrder field to a number so an edit preserves ordering (normal)", async () => {
+    mocks.updateCompany.mockResolvedValue({ id: "1" });
+    const fd = new FormData();
+    fd.set("id", "1");
+    fd.set("name", "Acme Inc");
+    fd.set("sortOrder", "3");
+    const result = await updateCompanyAction({ status: "idle" }, fd);
+    expect(result.status).toBe("ok");
+    expect(mocks.updateCompany).toHaveBeenCalledWith("1", expect.objectContaining({ sortOrder: 3 }));
+  });
 });
 
 describe("deleteCompanyAction", () => {

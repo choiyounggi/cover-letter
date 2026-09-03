@@ -22,6 +22,7 @@ export function ExperienceForm({
   return (
     <form action={formAction} className="flex max-w-md flex-col gap-4">
       {experience ? <input type="hidden" name="id" value={experience.id} /> : null}
+      {experience ? <input type="hidden" name="sortOrder" value={String(experience.sortOrder)} /> : null}
       {fixedCompanyId ? (
         <input type="hidden" name="companyId" value={fixedCompanyId} />
       ) : (

@@ -4,7 +4,7 @@ import { createLink, updateLink, deleteLink, reorderLinks } from "@/lib/data";
 import { adminAction, formToObject, toActionError, revalidateAdmin, type ActionState } from "./_helpers";
 
 export const createLinkAction = adminAction(async (_prev: ActionState, fd: FormData): Promise<ActionState> => {
-  const parsed = linkInputSchema.safeParse(formToObject(fd));
+  const parsed = linkInputSchema.safeParse(formToObject(fd, { numbers: ["sortOrder"] }));
   if (!parsed.success) return toActionError(parsed.error);
   await createLink(parsed.data);
   revalidateAdmin("/admin/links");
@@ -13,7 +13,7 @@ export const createLinkAction = adminAction(async (_prev: ActionState, fd: FormD
 
 export const updateLinkAction = adminAction(async (_prev: ActionState, fd: FormData): Promise<ActionState> => {
   const id = String(fd.get("id") ?? "");
-  const parsed = linkInputSchema.safeParse(formToObject(fd));
+  const parsed = linkInputSchema.safeParse(formToObject(fd, { numbers: ["sortOrder"] }));
   if (!parsed.success) return toActionError(parsed.error);
   await updateLink(id, parsed.data);
   revalidateAdmin("/admin/links");

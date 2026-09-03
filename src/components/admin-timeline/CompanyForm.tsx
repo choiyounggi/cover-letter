@@ -16,6 +16,7 @@ export function CompanyForm({
   return (
     <form action={formAction} className="flex max-w-md flex-col gap-4">
       {company ? <input type="hidden" name="id" value={company.id} /> : null}
+      {company ? <input type="hidden" name="sortOrder" value={String(company.sortOrder)} /> : null}
       <Field label="회사명" name="name" error={err("name")}>
         {(props) => <TextInput {...props} defaultValue={company?.name ?? ""} required />}
       </Field>

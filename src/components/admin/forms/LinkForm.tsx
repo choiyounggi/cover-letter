@@ -16,6 +16,7 @@ export function LinkForm({
   return (
     <form action={formAction} className="flex max-w-md flex-col gap-4">
       {link ? <input type="hidden" name="id" value={link.id} /> : null}
+      {link ? <input type="hidden" name="sortOrder" value={String(link.sortOrder)} /> : null}
       <Field label="라벨" name="label" error={err("label")}>
         {(props) => <TextInput {...props} defaultValue={link?.label ?? ""} required />}
       </Field>

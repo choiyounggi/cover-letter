@@ -76,6 +76,19 @@ describe("updateSkillAction", () => {
     expect(mocks.requireAdmin).toHaveBeenCalled();
     expect(mocks.updateSkill).toHaveBeenCalledWith("1", expect.objectContaining({ name: "TypeScript" }));
   });
+
+  it("converts the hidden sortOrder field to a number so an edit preserves ordering (normal)", async () => {
+    mocks.updateSkill.mockResolvedValue({ id: "1" });
+    const fd = new FormData();
+    fd.set("id", "1");
+    fd.set("name", "TypeScript");
+    fd.set("category", "FRONTEND");
+    fd.set("level", "4");
+    fd.set("sortOrder", "3");
+    const result = await updateSkillAction({ status: "idle" }, fd);
+    expect(result.status).toBe("ok");
+    expect(mocks.updateSkill).toHaveBeenCalledWith("1", expect.objectContaining({ sortOrder: 3 }));
+  });
 });
 
 describe("reorderSkillsAction", () => {

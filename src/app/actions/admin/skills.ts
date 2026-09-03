@@ -4,7 +4,7 @@ import { createSkill, updateSkill, deleteSkill, reorderSkills } from "@/lib/data
 import { adminAction, formToObject, toActionError, revalidateAdmin, type ActionState } from "./_helpers";
 
 export const createSkillAction = adminAction(async (_prev: ActionState, fd: FormData): Promise<ActionState> => {
-  const parsed = skillInputSchema.safeParse(formToObject(fd, { numbers: ["level"] }));
+  const parsed = skillInputSchema.safeParse(formToObject(fd, { numbers: ["level", "sortOrder"] }));
   if (!parsed.success) return toActionError(parsed.error);
   await createSkill(parsed.data);
   revalidateAdmin("/admin/skills");
@@ -13,7 +13,7 @@ export const createSkillAction = adminAction(async (_prev: ActionState, fd: Form
 
 export const updateSkillAction = adminAction(async (_prev: ActionState, fd: FormData): Promise<ActionState> => {
   const id = String(fd.get("id") ?? "");
-  const parsed = skillInputSchema.safeParse(formToObject(fd, { numbers: ["level"] }));
+  const parsed = skillInputSchema.safeParse(formToObject(fd, { numbers: ["level", "sortOrder"] }));
   if (!parsed.success) return toActionError(parsed.error);
   await updateSkill(id, parsed.data);
   revalidateAdmin("/admin/skills");

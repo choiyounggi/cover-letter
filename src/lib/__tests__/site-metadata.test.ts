@@ -28,4 +28,33 @@ describe("buildMetadata (pure)", () => {
     const meta = buildMetadata({ name: "최영기", title: "Backend Engineer", tagline: "   " });
     expect(meta.description).toBe("Backend Engineer");
   });
+
+  it("omits openGraph when ogImageUrl is an empty string (boundary)", () => {
+    const meta = buildMetadata(
+      { name: "최영기", title: "Backend Engineer", tagline: "" },
+      { siteUrl: "https://example.com", ogImageUrl: "" },
+    );
+    expect(meta.openGraph).toBeUndefined();
+  });
+
+  it("omits metadataBase when siteUrl fails new URL() parsing (error)", () => {
+    const meta = buildMetadata(
+      { name: "최영기", title: "Backend Engineer", tagline: "" },
+      { siteUrl: "not-a-url", ogImageUrl: "https://example.com/og.png" },
+    );
+    expect(meta.metadataBase).toBeUndefined();
+  });
+
+  it("sets both metadataBase and openGraph when siteUrl and ogImageUrl are both valid (normal)", () => {
+    const meta = buildMetadata(
+      { name: "최영기", title: "Backend Engineer", tagline: "실전에 강한 엔지니어" },
+      { siteUrl: "https://example.com", ogImageUrl: "https://example.com/og.png" },
+    );
+    expect(meta.metadataBase).toEqual(new URL("https://example.com"));
+    expect(meta.openGraph).toEqual({
+      title: "최영기 · Backend Engineer",
+      description: "실전에 강한 엔지니어",
+      images: ["https://example.com/og.png"],
+    });
+  });
 });

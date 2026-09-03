@@ -6,7 +6,7 @@ import { linesToArray } from "@/components/admin-timeline/achievements";
 import { adminAction, formToObject, toActionError, revalidateAdmin, type ActionState } from "./_helpers";
 
 function toExperienceInput(fd: FormData): ExperienceInput {
-  const raw = formToObject(fd, { arrays: ["techStack"] });
+  const raw = formToObject(fd, { arrays: ["techStack"], numbers: ["sortOrder"] });
   raw.achievements = linesToArray(String(fd.get("achievements") ?? ""));
   if (raw.endDate === "") raw.endDate = null;
   return raw as unknown as ExperienceInput;

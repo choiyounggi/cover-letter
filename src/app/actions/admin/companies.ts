@@ -4,7 +4,7 @@ import { createCompany, updateCompany, deleteCompany, reorderCompanies } from "@
 import { adminAction, formToObject, toActionError, revalidateAdmin, type ActionState } from "./_helpers";
 
 export const createCompanyAction = adminAction(async (_prev: ActionState, fd: FormData): Promise<ActionState> => {
-  const parsed = companyInputSchema.safeParse(formToObject(fd));
+  const parsed = companyInputSchema.safeParse(formToObject(fd, { numbers: ["sortOrder"] }));
   if (!parsed.success) return toActionError(parsed.error);
   await createCompany(parsed.data);
   revalidateAdmin("/admin/companies");
@@ -13,7 +13,7 @@ export const createCompanyAction = adminAction(async (_prev: ActionState, fd: Fo
 
 export const updateCompanyAction = adminAction(async (_prev: ActionState, fd: FormData): Promise<ActionState> => {
   const id = String(fd.get("id") ?? "");
-  const parsed = companyInputSchema.safeParse(formToObject(fd));
+  const parsed = companyInputSchema.safeParse(formToObject(fd, { numbers: ["sortOrder"] }));
   if (!parsed.success) return toActionError(parsed.error);
   await updateCompany(id, parsed.data);
   revalidateAdmin("/admin/companies");

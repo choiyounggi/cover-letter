@@ -4,7 +4,7 @@ import { createProject, updateProject, deleteProject, reorderProjects } from "@/
 import { adminAction, formToObject, toActionError, revalidateAdmin, type ActionState } from "./_helpers";
 
 function toProjectInput(fd: FormData): ProjectInput {
-  const raw = formToObject(fd, { arrays: ["techStack"], booleans: ["featured"] });
+  const raw = formToObject(fd, { arrays: ["techStack"], booleans: ["featured"], numbers: ["sortOrder"] });
   if (raw.startDate === "") raw.startDate = null;
   if (raw.endDate === "") raw.endDate = null;
   return raw as unknown as ProjectInput;

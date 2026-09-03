@@ -94,6 +94,18 @@ describe("updateLinkAction", () => {
     expect(mocks.updateLink).toHaveBeenCalledWith("1", expect.objectContaining({ label: "GitHub" }));
   });
 
+  it("converts the hidden sortOrder field to a number so an edit preserves ordering (normal)", async () => {
+    mocks.updateLink.mockResolvedValue({ id: "1" });
+    const fd = new FormData();
+    fd.set("id", "1");
+    fd.set("label", "GitHub");
+    fd.set("url", "https://github.com/choiyounggi");
+    fd.set("sortOrder", "3");
+    const result = await updateLinkAction({ status: "idle" }, fd);
+    expect(result.status).toBe("ok");
+    expect(mocks.updateLink).toHaveBeenCalledWith("1", expect.objectContaining({ sortOrder: 3 }));
+  });
+
   it("passes an empty id when the hidden id field is missing, so the wrong record would be targeted (boundary)", async () => {
     mocks.updateLink.mockResolvedValue({ id: "" });
     const fd = new FormData();

@@ -22,8 +22,14 @@ export async function submitContact(_prev: ContactState, formData: FormData): Pr
     return { status: "error", fieldErrors: { name: fieldErrors.name, email: fieldErrors.email, content: fieldErrors.content } };
   }
 
+  let message;
   try {
-    const message = await createMessage(parsed.data);
+    message = await createMessage(parsed.data);
+  } catch {
+    return { status: "error", message: GENERIC };
+  }
+
+  try {
     const settings = await getSettings();
     const sent = await sendTelegramMessage({
       botToken: settings["telegram.botToken"] ?? "",
@@ -36,8 +42,9 @@ export async function submitContact(_prev: ContactState, formData: FormData): Pr
       }),
     });
     if (sent.ok) await markTelegramSent(message.id);
-    return { status: "ok" };
   } catch {
-    return { status: "error", message: GENERIC };
+    /* message is already stored; a post-create failure must not fail the visitor */
   }
+
+  return { status: "ok" };
 }

@@ -93,6 +93,18 @@ describe("submitContact", () => {
     expect(markTelegramSentMock).not.toHaveBeenCalled();
   });
 
+  it("still returns ok when getSettings rejects after the message is already stored (async failure)", async () => {
+    createMessageMock.mockResolvedValue(message);
+    getSettingsMock.mockRejectedValue(new Error("db down"));
+
+    const result = await submitContact(idle, fd({ name: "최영기", email: "test@example.com", content: "안녕하세요" }));
+
+    expect(result).toEqual({ status: "ok" });
+    expect(createMessageMock).toHaveBeenCalledTimes(1);
+    expect(sendTelegramMessageMock).not.toHaveBeenCalled();
+    expect(markTelegramSentMock).not.toHaveBeenCalled();
+  });
+
   it("returns a generic message with no internals when the DB write throws (error)", async () => {
     createMessageMock.mockRejectedValue(new Error("connection refused at 10.0.0.5"));
 

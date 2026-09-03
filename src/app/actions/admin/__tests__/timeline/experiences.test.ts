@@ -98,6 +98,14 @@ describe("updateExperienceAction", () => {
     expect(result.status).toBe("ok");
     expect(mocks.updateExperience).toHaveBeenCalledWith("1", expect.objectContaining({ role: "Backend Engineer" }));
   });
+
+  it("converts the hidden sortOrder field to a number so an edit preserves ordering (normal)", async () => {
+    mocks.updateExperience.mockResolvedValue({ id: "1" });
+    const fd = validFd({ id: "1", sortOrder: "3" });
+    const result = await updateExperienceAction({ status: "idle" }, fd);
+    expect(result.status).toBe("ok");
+    expect(mocks.updateExperience).toHaveBeenCalledWith("1", expect.objectContaining({ sortOrder: 3 }));
+  });
 });
 
 describe("deleteExperienceAction", () => {

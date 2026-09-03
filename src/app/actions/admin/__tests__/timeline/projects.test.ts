@@ -95,6 +95,14 @@ describe("updateProjectAction", () => {
     expect(result.status).toBe("ok");
     expect(mocks.updateProject).toHaveBeenCalledWith("1", expect.objectContaining({ title: "Portfolio" }));
   });
+
+  it("converts the hidden sortOrder field to a number so an edit preserves ordering (normal)", async () => {
+    mocks.updateProject.mockResolvedValue({ id: "1" });
+    const fd = validFd({ id: "1", sortOrder: "3" });
+    const result = await updateProjectAction({ status: "idle" }, fd);
+    expect(result.status).toBe("ok");
+    expect(mocks.updateProject).toHaveBeenCalledWith("1", expect.objectContaining({ sortOrder: 3 }));
+  });
 });
 
 describe("deleteProjectAction", () => {

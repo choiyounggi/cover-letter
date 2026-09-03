@@ -26,6 +26,7 @@ export function SkillForm({
   return (
     <form action={formAction} className="flex max-w-md flex-col gap-4">
       {skill ? <input type="hidden" name="id" value={skill.id} /> : null}
+      {skill ? <input type="hidden" name="sortOrder" value={String(skill.sortOrder)} /> : null}
       <Field label="이름" name="name" error={err("name")}>
         {(props) => <TextInput {...props} defaultValue={skill?.name ?? ""} required />}
       </Field>

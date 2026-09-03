@@ -10,7 +10,13 @@ export function ReorderList({
   items: { id: string; label: string }[];
   action: (prev: ActionState, fd: FormData) => Promise<ActionState>;
 }) {
+  const itemsKey = items.map((i) => i.id).join("|");
+  const [prevItemsKey, setPrevItemsKey] = useState(itemsKey);
   const [order, setOrder] = useState(() => items.map((i) => i.id));
+  if (itemsKey !== prevItemsKey) {
+    setPrevItemsKey(itemsKey);
+    setOrder(items.map((i) => i.id));
+  }
   const [, formAction] = useActionState(action, { status: "idle" });
   const byId = new Map(items.map((i) => [i.id, i]));
 

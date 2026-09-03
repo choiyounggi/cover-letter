@@ -52,6 +52,37 @@ describe("ReorderList", () => {
     const upButtons = screen.getAllByRole("button", { name: "위로" });
     expect(upButtons[0]).toBeDisabled();
   });
+
+  it("resyncs order when the items membership changes (normal)", () => {
+    vi.mocked(useActionState).mockReturnValue([{ status: "idle" }, vi.fn(), false]);
+    const items = [
+      { id: "a", label: "A" },
+      { id: "b", label: "B" },
+    ];
+    const { rerender } = render(<ReorderList items={items} action={vi.fn()} />);
+    const nextItems = [
+      { id: "a", label: "A" },
+      { id: "c", label: "C" },
+    ];
+    rerender(<ReorderList items={nextItems} action={vi.fn()} />);
+    const hidden = document.querySelector('input[name="ids"]') as HTMLInputElement;
+    expect(JSON.parse(hidden.value)).toEqual(["a", "c"]);
+  });
+
+  it("preserves an in-progress move when items membership is unchanged (boundary)", () => {
+    vi.mocked(useActionState).mockReturnValue([{ status: "idle" }, vi.fn(), false]);
+    const items = [
+      { id: "a", label: "A" },
+      { id: "b", label: "B" },
+      { id: "c", label: "C" },
+    ];
+    const { rerender } = render(<ReorderList items={items} action={vi.fn()} />);
+    const upButtons = screen.getAllByRole("button", { name: "위로" });
+    fireEvent.click(upButtons[1]);
+    rerender(<ReorderList items={items} action={vi.fn()} />);
+    const hidden = document.querySelector('input[name="ids"]') as HTMLInputElement;
+    expect(JSON.parse(hidden.value)).toEqual(["b", "a", "c"]);
+  });
 });
 
 describe("DeleteButton", () => {

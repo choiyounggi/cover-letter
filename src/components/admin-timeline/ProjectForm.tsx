@@ -17,6 +17,7 @@ export function ProjectForm({
   return (
     <form action={formAction} className="flex max-w-md flex-col gap-4">
       {project ? <input type="hidden" name="id" value={project.id} /> : null}
+      {project ? <input type="hidden" name="sortOrder" value={String(project.sortOrder)} /> : null}
       <Field label="제목" name="title" error={err("title")}>
         {(props) => <TextInput {...props} defaultValue={project?.title ?? ""} required />}
       </Field>
