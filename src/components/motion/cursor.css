@@ -1,0 +1,27 @@
+html[data-custom-cursor] body {
+  cursor: none;
+}
+
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 60;
+  border-radius: 9999px;
+  mix-blend-mode: difference;
+  background: #fff;
+}
+
+.cursor-dot {
+  width: 8px;
+  height: 8px;
+}
+
+.cursor-ring {
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: 1px solid #fff;
+}
