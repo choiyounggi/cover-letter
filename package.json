@@ -6,17 +6,19 @@
   "engines": { "node": ">=20.9.0" },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:db": "sh -c 'DATABASE_URL=${TEST_DATABASE_URL:-postgresql://portfolio:portfolio@localhost:5433/portfolio_test} prisma migrate deploy && TEST_DATABASE_URL=${TEST_DATABASE_URL:-postgresql://portfolio:portfolio@localhost:5433/portfolio_test} vitest run src/lib/data --no-file-parallelism'",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.0",

@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum SkillCategory {
+  BACKEND
+  FRONTEND
+  DEVOPS
+  TOOLS
+  OTHER
+}
+
+enum TimelineCategory {
+  LIFE
+  EDUCATION
+  CAREER
+  PROJECT
+  MILESTONE
+}
+
+model Profile {
+  id        String   @id @default("main")
+  name      String
+  nameEn    String?
+  title     String
+  tagline   String?
+  bio       String   @default("")
+  avatarUrl String?
+  email     String?
+  location  String?
+  resumeUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Link {
+  id        String   @id @default(uuid(7))
+  label     String
+  url       String   @unique
+  icon      String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([sortOrder])
+}
+
+model Skill {
+  id        String        @id @default(uuid(7))
+  name      String
+  category  SkillCategory
+  level     Int           @default(3)
+  icon      String?
+  sortOrder Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  @@unique([name, category])
+  @@index([category, sortOrder])
+}
+
+model Company {
+  id          String       @id @default(uuid(7))
+  name        String       @unique
+  logoUrl     String?
+  url         String?
+  description String?
+  sortOrder   Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  experiences Experience[]
+  events      TimelineEvent[]
+  @@index([sortOrder])
+}
+
+model Experience {
+  id           String    @id @default(uuid(7))
+  companyId    String
+  company      Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  role         String
+  startDate    DateTime  @db.Date
+  endDate      DateTime? @db.Date
+  summary      String    @default("")
+  achievements String[]  @default([])
+  techStack    String[]  @default([])
+  sortOrder    Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  @@index([companyId, sortOrder])
+  @@index([startDate])
+}
+
+model Project {
+  id          String    @id @default(uuid(7))
+  title       String    @unique
+  summary     String
+  description String    @default("")
+  techStack   String[]  @default([])
+  repoUrl     String?
+  liveUrl     String?
+  imageUrl    String?
+  startDate   DateTime? @db.Date
+  endDate     DateTime? @db.Date
+  featured    Boolean   @default(false)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  @@index([featured, sortOrder])
+}
+
+model TimelineEvent {
+  id          String           @id @default(uuid(7))
+  title       String
+  description String           @default("")
+  date        DateTime         @db.Date
+  endDate     DateTime?        @db.Date
+  category    TimelineCategory
+  icon        String?
+  imageUrl    String?
+  companyId   String?
+  company     Company?         @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  sortOrder   Int              @default(0)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  @@unique([title, date])
+  @@index([date])
+}
+
+model Message {
+  id             String    @id @default(uuid(7))
+  name           String
+  email          String
+  content        String
+  createdAt      DateTime  @default(now())
+  readAt         DateTime?
+  telegramSentAt DateTime?
+  @@index([createdAt])
+}
+
+model Setting {
+  key       String   @id
+  value     String   @default("")
+  updatedAt DateTime @updatedAt
+}
