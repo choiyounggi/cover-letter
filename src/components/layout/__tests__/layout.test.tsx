@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { navVisibility } from "@/components/layout/nav-visibility";
@@ -53,6 +54,11 @@ describe("Nav", () => {
     expect(screen.getByRole("button", { name: "테마 전환" })).toBeInTheDocument();
   });
 
+  it("renders the ~/yg mono wordmark (normal)", () => {
+    render(<Nav />);
+    expect(screen.getByText("~/yg")).toBeInTheDocument();
+  });
+
   it("toggles aria-expanded on the mobile menu button (error/negative: closed by default)", () => {
     render(<Nav />);
     const menuButton = screen.getByRole("button", { name: "메뉴 열기" });
@@ -89,15 +95,57 @@ describe("Footer", () => {
   it("renders with no links (boundary: empty array)", () => {
     render(<Footer links={[]} />);
     expect(screen.queryAllByRole("link")).toHaveLength(0);
-    expect(screen.getByText(/Built with Next.js/)).toBeInTheDocument();
+    expect(screen.getByText("// built with next.js · prisma · postgres")).toBeInTheDocument();
+  });
+
+  it("never mentions Three.js in the closing copy (error/negative: removed dependency)", () => {
+    render(<Footer links={[]} />);
+    expect(screen.queryByText(/Three\.js/)).not.toBeInTheDocument();
   });
 });
 
 describe("SectionHeading", () => {
-  it("renders eyebrow text and an h2 with the given id", () => {
+  it("renders eyebrow as a // comment line and an h2 with the given id (normal)", () => {
     render(<SectionHeading id="about" eyebrow="About" title="소개" />);
-    expect(screen.getByText("About")).toBeInTheDocument();
+    expect(screen.getByText("// About")).toBeInTheDocument();
     const heading = screen.getByRole("heading", { level: 2, name: "소개" });
     expect(heading).toHaveAttribute("id", "about");
+  });
+
+  it("renders an empty // comment line without crashing (boundary: empty eyebrow)", () => {
+    render(<SectionHeading id="empty" eyebrow="" title="Empty" />);
+    expect(screen.getByText("//")).toBeInTheDocument();
+  });
+});
+
+describe("design tokens", () => {
+  const css = readFileSync("src/app/globals.css", "utf8");
+  const layoutSource = readFileSync("src/app/layout.tsx", "utf8");
+
+  it("exposes at least 6 --color-syn-* mappings in @theme inline (normal)", () => {
+    const matches = css.match(/--color-syn-/g) ?? [];
+    expect(matches.length).toBeGreaterThanOrEqual(6);
+  });
+
+  it("renders the .code-frame header from the data-file attribute (normal)", () => {
+    expect(css).toMatch(/\.code-frame::before\s*{[^}]*content:\s*attr\(data-file\)/);
+  });
+
+  it("contains no hex or rgb() color literal (error/negative: hex color leak)", () => {
+    expect(css).not.toMatch(/#[0-9a-f]{3,8}\b/i);
+    expect(css).not.toMatch(/rgb\(/i);
+  });
+
+  it("maps --font-display to Geist Mono first (normal)", () => {
+    expect(css).toMatch(/--font-display:\s*var\(--font-geist-mono\)/);
+  });
+
+  it("sets light/dark theme-color meta to the new bg token hex fallbacks (normal)", () => {
+    expect(layoutSource).toMatch(
+      /media:\s*"\(prefers-color-scheme:\s*light\)",\s*color:\s*"#f2f3f6"/,
+    );
+    expect(layoutSource).toMatch(
+      /media:\s*"\(prefers-color-scheme:\s*dark\)",\s*color:\s*"#111318"/,
+    );
   });
 });

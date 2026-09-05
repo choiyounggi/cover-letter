@@ -46,14 +46,14 @@ export function Nav() {
       )}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <a href="#" className="font-display text-lg font-semibold tracking-tight">
-          YG.
+        <a href="#" className="font-mono text-base font-semibold tracking-tight text-fg">
+          ~/yg
         </a>
         <ul className="hidden items-center gap-6 md:flex">
           {LINKS.map((link) => (
             <li key={link.href}>
               <Magnetic>
-                <a href={link.href} className="text-sm text-fg-muted transition-colors hover:text-fg">
+                <a href={link.href} className="font-mono text-sm text-fg-muted transition-colors hover:text-accent">
                   {link.label}
                 </a>
               </Magnetic>
@@ -67,7 +67,7 @@ export function Nav() {
             aria-expanded={menuOpen}
             aria-controls="nav-menu"
             aria-label="메뉴 열기"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border md:hidden"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-[var(--radius-sm)] border border-border md:hidden"
             onClick={() => setMenuOpen((v) => !v)}
           >
             <span aria-hidden>{menuOpen ? "✕" : "☰"}</span>
@@ -82,7 +82,7 @@ export function Nav() {
           <li key={link.href}>
             <a
               href={link.href}
-              className="block py-2 text-sm text-fg-muted"
+              className="block py-2 font-mono text-sm text-fg-muted"
               onClick={() => setMenuOpen(false)}
             >
               {link.label}
