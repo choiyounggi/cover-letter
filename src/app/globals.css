@@ -79,6 +79,7 @@
 
 @layer base {
   html { scroll-behavior: auto; }
+  html, body { overflow-x: clip; }
   body {
     background: var(--bg);
     color: var(--fg);
@@ -86,7 +87,8 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
-  ::selection { background: var(--accent); color: #fff; }
+  ::selection { background: var(--accent); color: var(--bg); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 }
 
 /* contract: t1-design-system owns the implementation — class names are the shared surface. */

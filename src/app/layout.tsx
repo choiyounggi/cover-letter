@@ -10,15 +10,15 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f5f5f7" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0c" },
+    { media: "(prefers-color-scheme: light)", color: "#f2f3f6" },
+    { media: "(prefers-color-scheme: dark)", color: "#111318" },
   ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body className={`${fontVariables} min-h-dvh bg-bg text-fg antialiased`}>
+      <body className={`${fontVariables} min-h-dvh grid-bg bg-bg text-fg antialiased`}>
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
