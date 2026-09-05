@@ -9,19 +9,60 @@ html[data-custom-cursor] body {
   left: 0;
   pointer-events: none;
   z-index: 60;
-  border-radius: 9999px;
-  mix-blend-mode: difference;
-  background: #fff;
+  opacity: 0;
+  will-change: transform;
+  transition: opacity var(--dur-fast) var(--ease-out-expo);
+}
+
+.cursor-dot.is-visible,
+.cursor-ring.is-visible {
+  opacity: 1;
 }
 
 .cursor-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  background: var(--accent);
 }
 
 .cursor-ring {
-  width: 36px;
-  height: 36px;
-  background: transparent;
-  border: 1px solid #fff;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  transition:
+    opacity var(--dur-fast) var(--ease-out-expo),
+    width var(--dur-fast) var(--ease-out-expo),
+    margin-left var(--dur-fast) var(--ease-out-expo);
+}
+
+.cursor-ring::before,
+.cursor-ring::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  border: 1.5px solid var(--fg);
+  transition: border-color var(--dur-fast) var(--ease-out-expo);
+}
+
+.cursor-ring::before {
+  left: 0;
+  border-right: 0;
+}
+
+.cursor-ring::after {
+  right: 0;
+  border-left: 0;
+}
+
+.cursor-ring.is-hover {
+  width: 44px;
+  margin-left: -22px;
+}
+
+.cursor-ring.is-hover::before,
+.cursor-ring.is-hover::after {
+  border-color: var(--accent);
 }

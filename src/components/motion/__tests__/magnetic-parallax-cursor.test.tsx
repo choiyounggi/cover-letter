@@ -3,7 +3,7 @@ import { act, cleanup, render, waitFor } from "@testing-library/react";
 import { magneticOffset } from "@/components/motion/magnetic-offset";
 import { Magnetic } from "@/components/motion/Magnetic";
 import { Parallax } from "@/components/motion/Parallax";
-import { Cursor } from "@/components/motion/Cursor";
+import { Cursor, DOT_FACTOR, RING_FACTOR } from "@/components/motion/Cursor";
 
 vi.mock("@/hooks/useIsTouch", () => ({
   useIsTouch: vi.fn().mockReturnValue(false),
@@ -182,7 +182,7 @@ describe("Cursor", () => {
     expect(document.documentElement.dataset.customCursor).toBeUndefined();
   });
 
-  it("lerps the dot and ring toward the pointer position as pointermove + RAF ticks fire (normal: the actual animation loop)", () => {
+  it("snaps the dot exactly to the pointer and eases the ring toward it as RAF ticks fire (normal: the actual animation loop)", () => {
     const { container } = render(<Cursor />);
     const dot = container.querySelector(".cursor-dot") as HTMLElement;
     const ring = container.querySelector(".cursor-ring") as HTMLElement;
@@ -190,22 +190,19 @@ describe("Cursor", () => {
 
     act(() => {
       window.dispatchEvent(new PointerEvent("pointermove", { clientX: 200, clientY: 100 }));
-      vi.advanceTimersByTime(500);
+      vi.advanceTimersByTime(50);
     });
 
-    const dotMatch = dot.style.transform.match(/translate\((-?[\d.]+)px, (-?[\d.]+)px\)/);
-    const ringMatch = ring.style.transform.match(/translate\((-?[\d.]+)px, (-?[\d.]+)px\)/);
-    expect(dotMatch).not.toBeNull();
+    expect(dot.style.transform).toBe("translate3d(200px, 100px, 0)");
+
+    const ringMatch = ring.style.transform.match(/translate3d\((-?[\d.]+)px, (-?[\d.]+)px, 0\)/);
     expect(ringMatch).not.toBeNull();
-    // Dot lerps faster (0.15) than the ring (0.08), so after the same elapsed
-    // time the dot must be strictly closer to the 200,100 target.
-    const dotX = Number(dotMatch![1]);
     const ringX = Number(ringMatch![1]);
-    expect(dotX).toBeGreaterThan(ringX);
-    expect(dotX).toBeGreaterThan(0);
+    expect(ringX).toBeGreaterThan(0);
+    expect(ringX).toBeLessThan(200);
   });
 
-  it("adds is-hover and scales the ring when the pointer is over a [data-cursor=hover] element", () => {
+  it("adds is-hover to the ring (CSS-driven size, no scale() in the inline transform) when the pointer is over a [data-cursor=hover] element", () => {
     const { container } = render(
       <div>
         <Cursor />
@@ -220,7 +217,29 @@ describe("Cursor", () => {
       vi.advanceTimersByTime(100);
     });
     expect(ring.classList.contains("is-hover")).toBe(true);
-    expect(ring.style.transform).toContain("scale(2)");
+    expect(ring.style.transform).not.toContain("scale(");
+  });
+
+  it("hides the cursor until the first pointermove, then reveals both elements (boundary: first move)", () => {
+    const { container } = render(<Cursor />);
+    const dot = container.querySelector(".cursor-dot") as HTMLElement;
+    const ring = container.querySelector(".cursor-ring") as HTMLElement;
+    expect(dot.classList.contains("is-visible")).toBe(false);
+    expect(ring.classList.contains("is-visible")).toBe(false);
+
+    act(() => {
+      window.dispatchEvent(new PointerEvent("pointermove", { clientX: 10, clientY: 10 }));
+      vi.advanceTimersByTime(16);
+    });
+
+    expect(dot.classList.contains("is-visible")).toBe(true);
+    expect(ring.classList.contains("is-visible")).toBe(true);
+  });
+
+  it("exports follow-model constants that keep the dot exact and the ring within its intended ease range (error-guard: regressing the constants)", () => {
+    expect(DOT_FACTOR).toBe(1);
+    expect(RING_FACTOR).toBeGreaterThan(0.3);
+    expect(RING_FACTOR).toBeLessThan(0.5);
   });
 
   it("removes the pointermove/pointerover window listeners and cancels the RAF loop on unmount", () => {
