@@ -13,7 +13,7 @@ const CATEGORY_LABELS: Record<SkillCategory, string> = {
 
 export function SkillsSection({ skillsByCategory }: { skillsByCategory: Record<SkillCategory, Skill[]> }) {
   return (
-    <section id="skills" className="scroll-mt-24 py-32" aria-labelledby="skills-heading">
+    <section id="skills" className="scroll-mt-24 py-24" aria-labelledby="skills-heading">
       <div className="mx-auto max-w-6xl px-6">
         <SectionHeading id="skills-heading" eyebrow="Skills" title="기술" />
         <div className="mt-12 space-y-10">
@@ -22,7 +22,7 @@ export function SkillsSection({ skillsByCategory }: { skillsByCategory: Record<S
             if (skills.length === 0) return null;
             return (
               <div key={category}>
-                <h3 className="font-display text-xl">{CATEGORY_LABELS[category]}</h3>
+                <h3 className="font-mono text-sm text-syn-comment">{`// ${CATEGORY_LABELS[category]}`}</h3>
                 <ul className="mt-4 flex flex-wrap gap-3">
                   {skills.map((skill) => (
                     <li key={skill.id}>

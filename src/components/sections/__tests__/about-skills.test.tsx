@@ -74,7 +74,27 @@ describe("AboutSection", () => {
       updatedAt: new Date(),
     };
     render(<AboutSection profile={makeProfile()} links={[link]} />);
-    expect(screen.getByRole("link", { name: "GitHub" })).toHaveAttribute("href", "https://github.com/x");
+    const anchor = screen.getByRole("link", { name: "GitHub" });
+    expect(anchor).toHaveAttribute("href", "https://github.com/x");
+    expect(anchor).toHaveClass("font-mono");
+  });
+
+  it("wraps the avatar image in a code-frame labelled avatar.png (normal)", () => {
+    const { container } = render(
+      <AboutSection profile={makeProfile({ avatarUrl: "/images/me.png" })} links={[]} />,
+    );
+    const frame = container.querySelector('.code-frame[data-file="avatar.png"]');
+    expect(frame).not.toBeNull();
+    expect(frame?.querySelector("img")).toHaveAttribute("src", "/images/me.png");
+  });
+
+  it("wraps the initials fallback in the same code-frame when avatarUrl is absent (boundary)", () => {
+    const { container } = render(
+      <AboutSection profile={makeProfile({ name: "최영기", avatarUrl: null })} links={[]} />,
+    );
+    const frame = container.querySelector('.code-frame[data-file="avatar.png"]');
+    expect(frame).not.toBeNull();
+    expect(frame?.textContent).toContain("최영");
   });
 });
 
@@ -111,7 +131,7 @@ describe("SkillsSection", () => {
     render(<SkillsSection skillsByCategory={grouped} />);
 
     const headings = screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent);
-    expect(headings).toEqual(["백엔드", "프론트엔드", "기타"]);
+    expect(headings).toEqual(["// 백엔드", "// 프론트엔드", "// 기타"]);
     expect(screen.getByLabelText("Java 숙련도 4/5")).toBeInTheDocument();
   });
 
@@ -119,7 +139,7 @@ describe("SkillsSection", () => {
     const grouped = emptyGrouped();
     grouped.BACKEND = [makeSkill({ name: "Java" })];
     render(<SkillsSection skillsByCategory={grouped} />);
-    expect(screen.queryByRole("heading", { level: 3, name: "기타" })).toBeNull();
+    expect(screen.queryByRole("heading", { level: 3, name: "// 기타" })).toBeNull();
   });
 
   it("renders no category headings when every category is empty (error/boundary)", () => {

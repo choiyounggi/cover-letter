@@ -5,7 +5,6 @@ import type { TimelineItem } from "@/lib/data";
 import { Reveal } from "@/components/motion";
 import { useGsap } from "@/hooks";
 import { gsap } from "@/lib/gsap";
-import { cn } from "@/lib/utils";
 import { SectionHeading } from "@/components/layout/SectionHeading";
 import { groupByYear } from "./timeline-utils";
 import { TimelineItemCard } from "./TimelineItemCard";
@@ -44,28 +43,25 @@ export function TimelineSection({ items }: { items: TimelineItem[] }) {
         {groups.length === 0 ? (
           <p className="mt-12 text-fg-muted">아직 기록이 없어요</p>
         ) : (
-          <div className="relative mt-16 pl-6 md:pl-0">
-            <div aria-hidden className="absolute inset-y-0 left-0 w-px bg-border md:left-1/2" />
+          <div className="relative mt-16 pl-8">
+            <div aria-hidden className="absolute inset-y-0 left-0 w-px bg-border" />
             <div
               ref={lineRef}
               aria-hidden
-              className="absolute inset-y-0 left-0 w-px origin-top scale-y-0 bg-accent md:left-1/2"
+              className="absolute inset-y-0 left-0 w-px origin-top scale-y-0 bg-accent"
             />
             <div className="space-y-16">
               {groups.map((group) => (
                 <div key={group.year}>
-                  <div className="sticky top-24 z-10 mb-6 md:text-center">
-                    <span className="font-mono text-sm text-fg-muted">{group.year}</span>
+                  <div className="sticky top-24 z-10 mb-6">
+                    <span className="font-mono text-sm tabular-nums text-syn-comment">{`// ${group.year}`}</span>
                   </div>
                   <div className="space-y-8">
-                    {group.items.map((item, i) => (
-                      <Reveal
-                        key={item.id}
-                        className={cn(
-                          "md:w-1/2",
-                          i % 2 === 0 ? "md:mr-auto md:pr-6" : "md:ml-auto md:pl-6",
-                        )}
-                      >
+                    {group.items.map((item) => (
+                      <Reveal key={item.id} className="relative">
+                        <span aria-hidden className="absolute -left-8 top-6 font-mono text-accent">
+                          *
+                        </span>
                         <TimelineItemCard item={item} />
                       </Reveal>
                     ))}
