@@ -236,6 +236,37 @@ describe("Cursor", () => {
     expect(ring.classList.contains("is-visible")).toBe(true);
   });
 
+  it("re-arms visibility across a disable→enable cycle so a freshly remounted cursor still reveals on the next move (error path: touch/reduced toggled mid-session, r1 F1)", async () => {
+    const { useIsTouch } = await import("@/hooks/useIsTouch");
+    const { container, rerender } = render(<Cursor />);
+
+    act(() => {
+      window.dispatchEvent(new PointerEvent("pointermove", { clientX: 10, clientY: 10 }));
+      vi.advanceTimersByTime(16);
+    });
+    expect(container.querySelector(".cursor-dot")?.classList.contains("is-visible")).toBe(true);
+
+    vi.mocked(useIsTouch).mockReturnValue(true);
+    rerender(<Cursor />);
+    expect(container.querySelector(".cursor-dot")).toBeNull();
+
+    vi.mocked(useIsTouch).mockReturnValue(false);
+    rerender(<Cursor />);
+    const dot = container.querySelector(".cursor-dot") as HTMLElement;
+    const ring = container.querySelector(".cursor-ring") as HTMLElement;
+    expect(dot.classList.contains("is-visible")).toBe(false);
+    expect(ring.classList.contains("is-visible")).toBe(false);
+
+    act(() => {
+      window.dispatchEvent(new PointerEvent("pointermove", { clientX: 20, clientY: 20 }));
+      vi.advanceTimersByTime(16);
+    });
+    expect(dot.classList.contains("is-visible")).toBe(true);
+    expect(ring.classList.contains("is-visible")).toBe(true);
+
+    vi.mocked(useIsTouch).mockReturnValue(false);
+  });
+
   it("exports follow-model constants that keep the dot exact and the ring within its intended ease range (error-guard: regressing the constants)", () => {
     expect(DOT_FACTOR).toBe(1);
     expect(RING_FACTOR).toBeGreaterThan(0.3);
