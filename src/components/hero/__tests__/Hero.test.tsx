@@ -1,49 +1,31 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render } from "@testing-library/react";
 import { Hero } from "@/components/hero/Hero";
 
-vi.mock("next/dynamic", () => ({
-  default: () => () => <div data-testid="canvas-stub" />,
+vi.mock("@/components/hero/NetworkCanvas", () => ({
+  NetworkCanvas: () => <canvas data-testid="canvas-stub" />,
 }));
 
 vi.mock("@/hooks/useReducedMotionPref", () => ({
-  useReducedMotionPref: vi.fn().mockReturnValue(false),
+  useReducedMotionPref: vi.fn().mockReturnValue(true),
 }));
-
-class FakeIntersectionObserver implements IntersectionObserver {
-  readonly root = null;
-  readonly rootMargin = "";
-  readonly thresholds: ReadonlyArray<number> = [];
-  observe() {}
-  disconnect() {}
-  unobserve() {}
-  takeRecords(): IntersectionObserverEntry[] {
-    return [];
-  }
-}
-
-beforeEach(() => {
-  vi.stubGlobal("IntersectionObserver", FakeIntersectionObserver);
-});
 
 afterEach(() => {
   cleanup();
-  vi.unstubAllGlobals();
 });
 
 describe("Hero", () => {
   it("renders name, title, and tagline (normal)", () => {
-    const { getByLabelText, getByText } = render(<Hero name="최영기" title="Backend Engineer" tagline="실전에 강한" />);
-    expect(getByLabelText("최영기")).toBeInTheDocument();
+    const { getByRole, getByText } = render(<Hero name="최영기" title="Backend Engineer" tagline="실전에 강한" />);
+    expect(getByRole("heading", { level: 1 })).toHaveTextContent("최영기");
     expect(getByText("Backend Engineer")).toBeInTheDocument();
     expect(getByText("실전에 강한")).toBeInTheDocument();
   });
 
-  it("renders no empty tagline paragraph when tagline is omitted (boundary)", () => {
+  it("renders no third output paragraph when tagline is omitted (boundary)", () => {
     const { container, getByText } = render(<Hero name="최영기" title="Backend Engineer" />);
     expect(getByText("Backend Engineer")).toBeInTheDocument();
-    // Only one <p> (title) should exist — no empty tagline <p>.
-    expect(container.querySelectorAll("p")).toHaveLength(1);
+    expect(container.querySelector(".intro-out")?.querySelectorAll("p")).toHaveLength(2);
   });
 
   it("marks the canvas layer aria-hidden so it never enters the a11y tree (a11y)", () => {
@@ -53,8 +35,15 @@ describe("Hero", () => {
     expect(canvasLayer?.querySelector('[data-testid="canvas-stub"]')).not.toBeNull();
   });
 
-  it("marks the root section with data-hero per D11 (normal)", () => {
+  it("marks the root section with data-hero and drops the old min-h-dvh sizing (contract)", () => {
     const { container } = render(<Hero name="최영기" title="Backend Engineer" />);
-    expect(container.querySelector("section[data-hero]")).not.toBeNull();
+    const section = container.querySelector("section[data-hero]");
+    expect(section).not.toBeNull();
+    expect(section?.className).not.toContain("min-h-dvh");
+  });
+
+  it("renders the code-intro editor panel as a code-frame (structure)", () => {
+    const { container } = render(<Hero name="최영기" title="Backend Engineer" />);
+    expect(container.querySelector('.code-frame[data-file="profile.ts"]')).not.toBeNull();
   });
 });
