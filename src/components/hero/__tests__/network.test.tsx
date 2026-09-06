@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { useEffect, useState } from "react";
 import { act, cleanup, render } from "@testing-library/react";
 import {
   clampNodes,
@@ -13,8 +14,45 @@ vi.mock("@/hooks/useReducedMotionPref", () => ({
   useReducedMotionPref: vi.fn().mockReturnValue(false),
 }));
 
+// A stateful stand-in for useThemeColors (real one: FALLBACK on first render, then its
+// own MutationObserver-driven effect resolves the real value, and can push again later on
+// a theme toggle) — needed to reproduce and regression-test r3-F1, where the reduced-motion
+// static paint must repaint on each of those later flushes, not just read whatever value
+// happened to be current at mount.
+const themeColorsMock = vi.hoisted(() => {
+  const FALLBACK = { bg: "#0a0a0c", fg: "#f5f5f7", accent: "#7c9cff" };
+  let current = FALLBACK;
+  const listeners = new Set<(c: typeof FALLBACK) => void>();
+  return {
+    FALLBACK,
+    get current() {
+      return current;
+    },
+    subscribe(fn: (c: typeof FALLBACK) => void) {
+      listeners.add(fn);
+      return () => {
+        listeners.delete(fn);
+      };
+    },
+    push(next: typeof FALLBACK) {
+      current = next;
+      listeners.forEach((fn) => fn(next));
+    },
+    reset() {
+      current = FALLBACK;
+    },
+  };
+});
+
 vi.mock("@/hooks/useThemeColors", () => ({
-  useThemeColors: vi.fn().mockReturnValue({ bg: "#0a0a0c", fg: "#f5f5f7", accent: "#7c9cff" }),
+  useThemeColors: () => {
+    const [colors, setColors] = useState(themeColorsMock.current);
+    useEffect(() => {
+      setColors(themeColorsMock.current);
+      return themeColorsMock.subscribe(setColors);
+    }, []);
+    return colors;
+  },
 }));
 
 // Wrap (not replace) stepNodes/seedNodes so pure-function tests below still exercise the
@@ -217,6 +255,7 @@ afterEach(async () => {
   if (originalClientHeight) Object.defineProperty(HTMLCanvasElement.prototype, "clientHeight", originalClientHeight);
   const { useReducedMotionPref } = await import("@/hooks/useReducedMotionPref");
   vi.mocked(useReducedMotionPref).mockReturnValue(false);
+  themeColorsMock.reset();
 });
 
 describe("NetworkCanvas", () => {
@@ -333,9 +372,8 @@ describe("NetworkCanvas", () => {
     const ctx = fakeCtx();
     HTMLCanvasElement.prototype.getContext = vi.fn(() => ctx) as unknown as typeof originalGetContext;
     const { seedNodes: mockedSeedNodes } = await import("@/components/hero/network");
-    const { useThemeColors } = await import("@/hooks/useThemeColors");
     const { NetworkCanvas } = await import("@/components/hero/NetworkCanvas");
-    const { rerender } = render(<NetworkCanvas />);
+    render(<NetworkCanvas />);
 
     act(() => {
       ioInstances[0].callback(
@@ -349,8 +387,9 @@ describe("NetworkCanvas", () => {
 
     // Simulate the theme hook handing back a fresh object identity, as it does on every
     // <html> class/style/data-theme mutation (e.g. Lenis toggling scroll classes).
-    vi.mocked(useThemeColors).mockReturnValue({ bg: "#111111", fg: "#eeeeee", accent: "#00ffff" });
-    rerender(<NetworkCanvas />);
+    act(() => {
+      themeColorsMock.push({ bg: "#111111", fg: "#eeeeee", accent: "#00ffff" });
+    });
 
     // The lifecycle effect must not have torn down and re-run: no re-seed, no new
     // observer instances (a teardown+rebuild would call `new IntersectionObserver(...)`
@@ -364,8 +403,40 @@ describe("NetworkCanvas", () => {
     });
     expect(ctx.strokeStyle).toBe("#00ffff");
     expect(ctx.fillStyle).toBe("#eeeeee");
+  });
 
-    vi.mocked(useThemeColors).mockReturnValue({ bg: "#0a0a0c", fg: "#f5f5f7", accent: "#7c9cff" });
+  it("repaints (never re-seeds) under reduced motion once useThemeColors resolves, and again on a later theme change (regression r3-F1)", async () => {
+    const ctx = fakeCtx();
+    HTMLCanvasElement.prototype.getContext = vi.fn(() => ctx) as unknown as typeof originalGetContext;
+    const { useReducedMotionPref } = await import("@/hooks/useReducedMotionPref");
+    vi.mocked(useReducedMotionPref).mockReturnValue(true);
+    const { seedNodes: mockedSeedNodes } = await import("@/components/hero/network");
+    const { NetworkCanvas } = await import("@/components/hero/NetworkCanvas");
+
+    render(<NetworkCanvas />);
+    // First paint used whatever the hook's fallback happened to be at mount.
+    expect(ctx.strokeStyle).toBe(themeColorsMock.FALLBACK.accent);
+    expect(ctx.clearRect).toHaveBeenCalledTimes(1);
+    const seedCallsAfterMount = vi.mocked(mockedSeedNodes).mock.calls.length;
+
+    // useThemeColors' own effect resolving the real theme colors shortly after mount.
+    act(() => {
+      themeColorsMock.push({ bg: "#111111", fg: "#eeeeee", accent: "#00ffff" });
+    });
+    expect(ctx.strokeStyle).toBe("#00ffff");
+    expect(ctx.fillStyle).toBe("#eeeeee");
+    expect(ctx.clearRect).toHaveBeenCalledTimes(2);
+
+    // A later theme toggle must repaint again, not just update the ref silently.
+    act(() => {
+      themeColorsMock.push({ bg: "#222222", fg: "#dddddd", accent: "#ff00ff" });
+    });
+    expect(ctx.strokeStyle).toBe("#ff00ff");
+    expect(ctx.fillStyle).toBe("#dddddd");
+    expect(ctx.clearRect).toHaveBeenCalledTimes(3);
+
+    expect(vi.mocked(mockedSeedNodes).mock.calls.length).toBe(seedCallsAfterMount);
+    expect(window.requestAnimationFrame).not.toHaveBeenCalled();
   });
 
   it("clamps existing nodes into a resized canvas instead of re-seeding when the node count is unchanged (regression r2-F2)", async () => {
