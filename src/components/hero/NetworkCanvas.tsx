@@ -2,14 +2,23 @@
 
 import { useEffect, useRef } from "react";
 import { useReducedMotionPref } from "@/hooks/useReducedMotionPref";
-import { useThemeColors } from "@/hooks/useThemeColors";
+import { useThemeColors, type ThemeColors } from "@/hooks/useThemeColors";
 import { cn } from "@/lib/utils";
-import { EDGE_DIST, type Node, nodeCountFor, seedNodes, stepNodes } from "./network";
+import { EDGE_DIST, type Node, clampNodes, nodeCountFor, seedNodes, stepNodes } from "./network";
 
 export function NetworkCanvas({ className }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const reduced = useReducedMotionPref();
   const colors = useThemeColors();
+  const colorsRef = useRef<ThemeColors>(colors);
+
+  // Keep the latest theme colors available to the rAF loop without making the lifecycle
+  // effect below depend on `colors` — useThemeColors hands back a new object on every
+  // <html> class/style/data-theme mutation (e.g. Lenis toggling scroll classes), and
+  // keying the loop's effect on that identity would tear down + reseed on every scroll.
+  useEffect(() => {
+    colorsRef.current = colors;
+  }, [colors]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -18,6 +27,7 @@ export function NetworkCanvas({ className }: { className?: string }) {
     if (!ctx) return;
 
     let nodes: Node[] = [];
+    let nodeCount = 0;
     let pointer: { x: number; y: number } | null = null;
     let rafId: number | null = null;
     let width = 0;
@@ -33,12 +43,14 @@ export function NetworkCanvas({ className }: { className?: string }) {
     };
 
     const seed = () => {
-      nodes = seedNodes(nodeCountFor(width), width, height);
+      nodeCount = nodeCountFor(width);
+      nodes = seedNodes(nodeCount, width, height);
     };
 
     const draw = () => {
+      const themeColors = colorsRef.current;
       ctx.clearRect(0, 0, width, height);
-      ctx.strokeStyle = colors.accent;
+      ctx.strokeStyle = themeColors.accent;
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
           const d = Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y);
@@ -51,7 +63,7 @@ export function NetworkCanvas({ className }: { className?: string }) {
           }
         }
       }
-      ctx.fillStyle = colors.fg;
+      ctx.fillStyle = themeColors.fg;
       ctx.globalAlpha = 0.7;
       for (const n of nodes) ctx.fillRect(n.x - 0.75, n.y - 0.75, 1.5, 1.5);
       ctx.globalAlpha = 1;
@@ -98,7 +110,16 @@ export function NetworkCanvas({ className }: { className?: string }) {
 
     const ro = new ResizeObserver(() => {
       size();
-      seed();
+      // Only re-seed when the target node count actually changes (a real breakpoint
+      // crossing). A same-count resize — e.g. a mobile URL bar collapsing the viewport
+      // height by a few dozen px on every scroll — just clamps the existing nodes into
+      // the new bounds instead of re-randomising the whole network.
+      const nextCount = nodeCountFor(width);
+      if (nextCount !== nodeCount) {
+        seed();
+      } else {
+        clampNodes(nodes, width, height);
+      }
     });
     ro.observe(canvas);
 
@@ -108,7 +129,7 @@ export function NetworkCanvas({ className }: { className?: string }) {
       ro.disconnect();
       window.removeEventListener("pointermove", onPointerMove);
     };
-  }, [reduced, colors]);
+  }, [reduced]);
 
   return <canvas ref={canvasRef} aria-hidden="true" className={cn("absolute inset-0 h-full w-full", className)} />;
 }
