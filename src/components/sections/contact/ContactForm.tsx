@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 const initialState: ContactState = { status: "idle" };
 
 const inputClassName = cn(
-  "w-full rounded-[var(--radius-md)] border border-border bg-bg-elevated px-4 py-3",
-  "focus:outline-none focus:ring-2 focus:ring-accent",
+  "w-full rounded-[var(--radius-sm)] border border-border bg-bg-elevated px-4 py-3 font-mono text-sm",
+  "focus:outline-none focus-visible:ring-2 focus-visible:ring-accent",
 );
 
 type FieldValues = { name: string; email: string; content: string };
@@ -57,7 +57,7 @@ export function ContactForm(): React.JSX.Element {
   return (
     <form ref={formRef} action={formAction} onSubmit={handleSubmit} className="mt-10 flex flex-col gap-6" noValidate>
       <div className="flex flex-col gap-2">
-        <label htmlFor="contact-name" className="text-sm text-fg-muted">
+        <label htmlFor="contact-name" className="font-mono text-sm text-fg-muted">
           이름
         </label>
         <input
@@ -78,7 +78,7 @@ export function ContactForm(): React.JSX.Element {
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="contact-email" className="text-sm text-fg-muted">
+        <label htmlFor="contact-email" className="font-mono text-sm text-fg-muted">
           이메일
         </label>
         <input
@@ -99,7 +99,7 @@ export function ContactForm(): React.JSX.Element {
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="contact-content" className="text-sm text-fg-muted">
+        <label htmlFor="contact-content" className="font-mono text-sm text-fg-muted">
           내용
         </label>
         <textarea
@@ -137,7 +137,7 @@ export function ContactForm(): React.JSX.Element {
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-full bg-fg px-6 py-3 text-bg disabled:opacity-60"
+          className="rounded-[var(--radius-sm)] bg-fg px-6 py-3 font-mono text-bg disabled:opacity-60"
         >
           {isPending ? "보내는 중…" : "보내기"}
         </button>

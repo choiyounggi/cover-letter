@@ -5,6 +5,9 @@ import { useIsTouch } from "@/hooks/useIsTouch";
 import { useReducedMotionPref } from "@/hooks/useReducedMotionPref";
 import "./cursor.css";
 
+export const DOT_FACTOR = 1;
+export const RING_FACTOR = 0.35;
+
 export function Cursor() {
   const isTouch = useIsTouch();
   const reduced = useReducedMotionPref();
@@ -16,6 +19,7 @@ export function Cursor() {
   const dot = useRef({ x: 0, y: 0 });
   const ring = useRef({ x: 0, y: 0 });
   const hover = useRef(false);
+  const visible = useRef(false);
 
   useEffect(() => {
     if (disabled) return;
@@ -31,6 +35,11 @@ export function Cursor() {
     const onPointerMove = (e: PointerEvent) => {
       target.current.x = e.clientX;
       target.current.y = e.clientY;
+      if (!visible.current) {
+        visible.current = true;
+        dotRef.current?.classList.add("is-visible");
+        ringRef.current?.classList.add("is-visible");
+      }
     };
     const onPointerOver = (e: PointerEvent) => {
       const el = e.target as Element | null;
@@ -43,17 +52,16 @@ export function Cursor() {
     window.addEventListener("pointerover", onPointerOver);
 
     let rafId = requestAnimationFrame(function tick() {
-      dot.current.x += (target.current.x - dot.current.x) * 0.15;
-      dot.current.y += (target.current.y - dot.current.y) * 0.15;
-      ring.current.x += (target.current.x - ring.current.x) * 0.08;
-      ring.current.y += (target.current.y - ring.current.y) * 0.08;
+      dot.current.x += (target.current.x - dot.current.x) * DOT_FACTOR;
+      dot.current.y += (target.current.y - dot.current.y) * DOT_FACTOR;
+      ring.current.x += (target.current.x - ring.current.x) * RING_FACTOR;
+      ring.current.y += (target.current.y - ring.current.y) * RING_FACTOR;
 
       if (dotRef.current) {
-        dotRef.current.style.transform = `translate(${dot.current.x}px, ${dot.current.y}px)`;
+        dotRef.current.style.transform = `translate3d(${dot.current.x}px, ${dot.current.y}px, 0)`;
       }
       if (ringRef.current) {
-        const scale = hover.current ? " scale(2)" : "";
-        ringRef.current.style.transform = `translate(${ring.current.x}px, ${ring.current.y}px)${scale}`;
+        ringRef.current.style.transform = `translate3d(${ring.current.x}px, ${ring.current.y}px, 0)`;
       }
       rafId = requestAnimationFrame(tick);
     });
@@ -62,6 +70,7 @@ export function Cursor() {
       cancelAnimationFrame(rafId);
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerover", onPointerOver);
+      visible.current = false;
     };
   }, [disabled]);
 

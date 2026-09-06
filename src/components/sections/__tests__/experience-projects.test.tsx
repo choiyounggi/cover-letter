@@ -74,6 +74,11 @@ describe("ExperienceSection", () => {
     render(<ExperienceSection companies={[]} />);
     expect(screen.queryAllByRole("article")).toHaveLength(0);
   });
+
+  it("wraps each company in a code-frame labelled with its name (normal)", () => {
+    const { container } = render(<ExperienceSection companies={[makeCompany({ id: "c1", name: "ACME" })]} />);
+    expect(container.querySelector('article.code-frame[data-file="ACME"]')).toBeInTheDocument();
+  });
 });
 
 function makeProject(overrides: Partial<Project> = {}): Project {
@@ -141,5 +146,15 @@ describe("ProjectsSection", () => {
   it("shows an empty state when there are no projects (error/boundary)", () => {
     render(<ProjectsSection projects={[]} />);
     expect(screen.getByText("프로젝트를 준비 중이에요")).toBeInTheDocument();
+  });
+
+  it("wraps each project card in a code-frame labelled with its title (normal)", () => {
+    const { container } = render(<ProjectsSection projects={[makeProject({ id: "p1", title: "Featured" })]} />);
+    expect(container.querySelector('.code-frame[data-file="Featured"]')).toBeInTheDocument();
+  });
+
+  it("shows the grid-textured placeholder text when imageUrl is missing (boundary)", () => {
+    const { container } = render(<ProjectsSection projects={[makeProject({ id: "p1", imageUrl: null })]} />);
+    expect(container.querySelector('[data-placeholder="true"]')).toHaveTextContent("// no preview");
   });
 });

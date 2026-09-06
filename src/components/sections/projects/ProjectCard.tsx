@@ -3,13 +3,18 @@ import type { Project } from "@/generated/prisma/client";
 
 export function ProjectCard({ project }: { project: Project }) {
   return (
-    <article className="overflow-hidden rounded-[var(--radius-md)] border border-border bg-bg-elevated">
+    <article className="code-frame overflow-hidden" data-file={project.title}>
       {project.imageUrl ? (
         <div className="relative aspect-video w-full">
           <Image src={project.imageUrl} alt={project.title} fill className="object-cover" />
         </div>
       ) : (
-        <div data-placeholder="true" className="aspect-video w-full bg-gradient-to-br from-accent/30 to-fg/10" />
+        <div
+          data-placeholder="true"
+          className="grid-bg flex aspect-video w-full items-center justify-center font-mono text-xs text-syn-comment"
+        >
+          {"// no preview"}
+        </div>
       )}
       <div className="p-6">
         <h3 className="font-display text-lg">{project.title}</h3>
@@ -17,7 +22,7 @@ export function ProjectCard({ project }: { project: Project }) {
         {project.techStack.length > 0 && (
           <ul className="mt-3 flex flex-wrap gap-2">
             {project.techStack.map((tech) => (
-              <li key={tech} className="rounded-full border border-border px-2 py-1 text-xs text-fg-muted">
+              <li key={tech} className="font-mono text-xs text-fg-muted before:content-['['] after:content-[']']">
                 {tech}
               </li>
             ))}
@@ -29,9 +34,10 @@ export function ProjectCard({ project }: { project: Project }) {
               href={project.repoUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-fg-muted hover:text-fg"
+              aria-label="Repo"
+              className="font-mono text-sm text-fg-muted transition-colors hover:text-accent"
             >
-              Repo
+              repo ↗
             </a>
           )}
           {project.liveUrl && (
@@ -39,9 +45,10 @@ export function ProjectCard({ project }: { project: Project }) {
               href={project.liveUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-fg-muted hover:text-fg"
+              aria-label="Live"
+              className="font-mono text-sm text-fg-muted transition-colors hover:text-accent"
             >
-              Live
+              live ↗
             </a>
           )}
         </div>

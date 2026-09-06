@@ -112,7 +112,7 @@ describe("TimelineSection (RTL)", () => {
     expect(screen.getByText("아직 기록이 없어요")).toBeInTheDocument();
   });
 
-  it("alternates items to the left/right column by index parity within a year (D5 layout)", async () => {
+  it("renders every item on a single rail column with no L/R alternation, one glyph each (D5 layout)", async () => {
     const { TimelineSection } = await import("@/components/sections/timeline/TimelineSection");
     const { container } = render(
       <TimelineSection
@@ -124,7 +124,20 @@ describe("TimelineSection (RTL)", () => {
     );
     const rows = container.querySelectorAll("#timeline .space-y-8 > div");
     expect(rows).toHaveLength(2);
-    expect(rows[0].className).toContain("md:mr-auto");
-    expect(rows[1].className).toContain("md:ml-auto");
+    for (const row of rows) {
+      expect(row.className).toContain("relative");
+      expect(row.className).not.toContain("md:ml-auto");
+      expect(row.className).not.toContain("md:mr-auto");
+      const glyphs = Array.from(row.querySelectorAll("span[aria-hidden]")).filter(
+        (s) => s.textContent === "*",
+      );
+      expect(glyphs).toHaveLength(1);
+    }
+  });
+
+  it("renders the sticky year label in mono comment form (boundary)", async () => {
+    const { TimelineSection } = await import("@/components/sections/timeline/TimelineSection");
+    render(<TimelineSection items={[eventItem({ date: new Date("2024-03-01T00:00:00Z") })]} />);
+    expect(screen.getByText("// 2024")).toBeInTheDocument();
   });
 });

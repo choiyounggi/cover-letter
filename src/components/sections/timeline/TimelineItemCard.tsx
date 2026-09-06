@@ -14,12 +14,14 @@ export function TimelineItemCard({ item }: { item: TimelineItem }) {
   const techStack = item.kind === "experience" ? item.techStack : undefined;
 
   return (
-    <article className="rounded-[var(--radius-md)] border border-border bg-bg-elevated p-6">
+    <article className="border-l border-border pl-5">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded-full bg-accent/15 px-3 py-1 font-mono text-xs text-accent">
+        <span className="font-mono text-xs text-accent before:content-['['] after:content-[']']">
           {CATEGORY_LABELS[item.category]}
         </span>
-        <span className="text-xs text-fg-muted">{formatRange(item.date, item.endDate)}</span>
+        <span className="font-mono text-xs tabular-nums text-fg-muted">
+          {formatRange(item.date, item.endDate)}
+        </span>
       </div>
       <div className="mt-3 flex items-center gap-2">
         {item.company?.logoUrl && (
@@ -38,7 +40,7 @@ export function TimelineItemCard({ item }: { item: TimelineItem }) {
       {techStack && techStack.length > 0 && (
         <ul className="mt-3 flex flex-wrap gap-2">
           {techStack.map((tech) => (
-            <li key={tech} className="rounded-full border border-border px-2 py-1 text-xs text-fg-muted">
+            <li key={tech} className="font-mono text-xs text-fg-muted before:content-['['] after:content-[']']">
               {tech}
             </li>
           ))}
