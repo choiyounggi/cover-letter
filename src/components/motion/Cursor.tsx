@@ -70,6 +70,7 @@ export function Cursor() {
       cancelAnimationFrame(rafId);
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerover", onPointerOver);
+      visible.current = false;
     };
   }, [disabled]);
 
