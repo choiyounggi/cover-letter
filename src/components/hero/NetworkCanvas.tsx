@@ -11,14 +11,20 @@ export function NetworkCanvas({ className }: { className?: string }) {
   const reduced = useReducedMotionPref();
   const colors = useThemeColors();
   const colorsRef = useRef<ThemeColors>(colors);
+  const drawRef = useRef<(() => void) | null>(null);
 
   // Keep the latest theme colors available to the rAF loop without making the lifecycle
   // effect below depend on `colors` — useThemeColors hands back a new object on every
   // <html> class/style/data-theme mutation (e.g. Lenis toggling scroll classes), and
   // keying the loop's effect on that identity would tear down + reseed on every scroll.
+  // Under reduced motion there is no rAF loop to pick up the new ref on its own, so this
+  // also triggers a one-off repaint (never a re-seed) whenever colors actually change —
+  // otherwise the single static frame stays painted with useThemeColors' initial
+  // FALLBACK value forever, since its own first real read only lands after this mounts.
   useEffect(() => {
     colorsRef.current = colors;
-  }, [colors]);
+    if (reduced) drawRef.current?.();
+  }, [colors, reduced]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -71,6 +77,7 @@ export function NetworkCanvas({ className }: { className?: string }) {
 
     size();
     seed();
+    drawRef.current = draw;
 
     if (reduced) {
       draw();
