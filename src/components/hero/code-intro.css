@@ -1,0 +1,33 @@
+.code-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  vertical-align: -0.15em;
+  background: var(--accent);
+  animation: code-caret-blink 1s steps(2, start) infinite;
+}
+.intro-out > * {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity var(--dur-base) var(--ease-out-expo),
+    transform var(--dur-base) var(--ease-out-expo);
+  transition-delay: calc(var(--stagger, 0) * 120ms);
+}
+.intro-out.is-done > * {
+  opacity: 1;
+  transform: none;
+}
+@keyframes code-caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .code-caret {
+    animation: none;
+  }
+  .intro-out > * {
+    transition: none;
+  }
+}
