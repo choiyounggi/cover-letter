@@ -67,3 +67,15 @@ export function stepNodes(
 export function nodeCountFor(width: number): number {
   return width >= 768 ? 70 : 35;
 }
+
+// Pulls nodes back inside [0,width]x[0,height] in place, without touching velocity or
+// re-randomising position — used to preserve node continuity across a same-node-count
+// resize (e.g. a mobile URL bar collapsing the viewport height) instead of re-seeding.
+export function clampNodes(nodes: Node[], width: number, height: number): void {
+  for (const n of nodes) {
+    if (n.x < 0) n.x = 0;
+    else if (n.x > width) n.x = width;
+    if (n.y < 0) n.y = 0;
+    else if (n.y > height) n.y = height;
+  }
+}

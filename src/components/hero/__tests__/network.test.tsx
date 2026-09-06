@@ -1,6 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, render } from "@testing-library/react";
-import { nodeCountFor, POINTER_INNER_RADIUS, POINTER_RADIUS, seedNodes, stepNodes } from "@/components/hero/network";
+import {
+  clampNodes,
+  nodeCountFor,
+  POINTER_INNER_RADIUS,
+  POINTER_RADIUS,
+  seedNodes,
+  stepNodes,
+} from "@/components/hero/network";
 
 vi.mock("@/hooks/useReducedMotionPref", () => ({
   useReducedMotionPref: vi.fn().mockReturnValue(false),
@@ -10,12 +17,18 @@ vi.mock("@/hooks/useThemeColors", () => ({
   useThemeColors: vi.fn().mockReturnValue({ bg: "#0a0a0c", fg: "#f5f5f7", accent: "#7c9cff" }),
 }));
 
-// Wrap (not replace) stepNodes so pure-function tests below still exercise the real
-// implementation, while the NetworkCanvas describe can assert it was actually invoked
-// from the rAF loop instead of only asserting the loop's negative (never-runs) paths.
+// Wrap (not replace) stepNodes/seedNodes so pure-function tests below still exercise the
+// real implementation, while the NetworkCanvas describe can assert they were actually
+// invoked (or, for the r2 regression tests, NOT re-invoked) from the lifecycle effect
+// instead of only asserting the loop's negative (never-runs) paths.
 vi.mock("@/components/hero/network", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/components/hero/network")>();
-  return { ...actual, stepNodes: vi.fn(actual.stepNodes) };
+  return {
+    ...actual,
+    stepNodes: vi.fn(actual.stepNodes),
+    seedNodes: vi.fn(actual.seedNodes),
+    clampNodes: vi.fn(actual.clampNodes),
+  };
 });
 
 describe("seedNodes", () => {
@@ -91,6 +104,32 @@ describe("stepNodes", () => {
   });
 });
 
+describe("clampNodes", () => {
+  it("pulls an out-of-bounds node back to the nearest edge on each axis (normal)", () => {
+    const nodes = [{ x: -10, y: 500, vx: 1, vy: -1 }];
+    clampNodes(nodes, 200, 300);
+    expect(nodes[0]).toMatchObject({ x: 0, y: 300 });
+  });
+
+  it("leaves an already-in-bounds node untouched (boundary)", () => {
+    const nodes = [{ x: 50, y: 50, vx: 1, vy: 1 }];
+    clampNodes(nodes, 200, 300);
+    expect(nodes[0]).toMatchObject({ x: 50, y: 50 });
+  });
+
+  it("does not move a node that sits exactly on the new edge (boundary)", () => {
+    const nodes = [{ x: 150, y: 250, vx: 0, vy: 0 }];
+    clampNodes(nodes, 150, 250);
+    expect(nodes[0]).toMatchObject({ x: 150, y: 250 });
+  });
+
+  it("is a no-op on an empty node list (error/edge)", () => {
+    const nodes: ReturnType<typeof seedNodes> = [];
+    expect(() => clampNodes(nodes, 200, 300)).not.toThrow();
+    expect(nodes).toHaveLength(0);
+  });
+});
+
 function fakeCtx() {
   return {
     clearRect: vi.fn(),
@@ -124,10 +163,12 @@ class FakeIntersectionObserver implements IntersectionObserver {
 }
 
 class FakeResizeObserver implements ResizeObserver {
+  callback: ResizeObserverCallback;
   observe = vi.fn();
   disconnect = vi.fn();
   unobserve = vi.fn();
-  constructor() {
+  constructor(cb: ResizeObserverCallback) {
+    this.callback = cb;
     roInstances.push(this);
   }
 }
@@ -158,8 +199,14 @@ beforeEach(async () => {
   vi.stubGlobal("cancelAnimationFrame", vi.fn());
   Object.defineProperty(HTMLCanvasElement.prototype, "clientWidth", { value: 800, configurable: true });
   Object.defineProperty(HTMLCanvasElement.prototype, "clientHeight", { value: 400, configurable: true });
-  const { stepNodes: mockedStepNodes } = await import("@/components/hero/network");
+  const {
+    stepNodes: mockedStepNodes,
+    seedNodes: mockedSeedNodes,
+    clampNodes: mockedClampNodes,
+  } = await import("@/components/hero/network");
   vi.mocked(mockedStepNodes).mockClear();
+  vi.mocked(mockedSeedNodes).mockClear();
+  vi.mocked(mockedClampNodes).mockClear();
 });
 
 afterEach(async () => {
@@ -280,6 +327,84 @@ describe("NetworkCanvas", () => {
       rafCallbacks[0](0);
     });
     expect(mockedStepNodes).toHaveBeenCalledWith(expect.anything(), expect.any(Number), expect.any(Number), null);
+  });
+
+  it("does not re-seed or restart the loop when colors change identity, but draws with the new colors on the next frame (regression r2-F1)", async () => {
+    const ctx = fakeCtx();
+    HTMLCanvasElement.prototype.getContext = vi.fn(() => ctx) as unknown as typeof originalGetContext;
+    const { seedNodes: mockedSeedNodes } = await import("@/components/hero/network");
+    const { useThemeColors } = await import("@/hooks/useThemeColors");
+    const { NetworkCanvas } = await import("@/components/hero/NetworkCanvas");
+    const { rerender } = render(<NetworkCanvas />);
+
+    act(() => {
+      ioInstances[0].callback(
+        [{ isIntersecting: true } as IntersectionObserverEntry],
+        ioInstances[0] as unknown as IntersectionObserver,
+      );
+    });
+    const seedCallsBefore = vi.mocked(mockedSeedNodes).mock.calls.length;
+    const ioCountBefore = ioInstances.length;
+    const roCountBefore = roInstances.length;
+
+    // Simulate the theme hook handing back a fresh object identity, as it does on every
+    // <html> class/style/data-theme mutation (e.g. Lenis toggling scroll classes).
+    vi.mocked(useThemeColors).mockReturnValue({ bg: "#111111", fg: "#eeeeee", accent: "#00ffff" });
+    rerender(<NetworkCanvas />);
+
+    // The lifecycle effect must not have torn down and re-run: no re-seed, no new
+    // observer instances (a teardown+rebuild would call `new IntersectionObserver(...)`
+    // and `new ResizeObserver(...)` again).
+    expect(vi.mocked(mockedSeedNodes).mock.calls.length).toBe(seedCallsBefore);
+    expect(ioInstances.length).toBe(ioCountBefore);
+    expect(roInstances.length).toBe(roCountBefore);
+
+    act(() => {
+      rafCallbacks[rafCallbacks.length - 1](0);
+    });
+    expect(ctx.strokeStyle).toBe("#00ffff");
+    expect(ctx.fillStyle).toBe("#eeeeee");
+
+    vi.mocked(useThemeColors).mockReturnValue({ bg: "#0a0a0c", fg: "#f5f5f7", accent: "#7c9cff" });
+  });
+
+  it("clamps existing nodes into a resized canvas instead of re-seeding when the node count is unchanged (regression r2-F2)", async () => {
+    const ctx = fakeCtx();
+    HTMLCanvasElement.prototype.getContext = vi.fn(() => ctx) as unknown as typeof originalGetContext;
+    const { seedNodes: mockedSeedNodes, clampNodes: mockedClampNodes } = await import("@/components/hero/network");
+    const { NetworkCanvas } = await import("@/components/hero/NetworkCanvas");
+    render(<NetworkCanvas />);
+    const seedCallsBefore = vi.mocked(mockedSeedNodes).mock.calls.length;
+
+    // Shrink the height only (mobile URL-bar collapse), keep width the same (800, still
+    // >=768) so nodeCountFor(width) does not change — this must clamp, not re-seed.
+    Object.defineProperty(HTMLCanvasElement.prototype, "clientHeight", { value: 340, configurable: true });
+    act(() => {
+      roInstances[0].callback([] as ResizeObserverEntry[], roInstances[0] as unknown as ResizeObserver);
+    });
+
+    expect(vi.mocked(mockedSeedNodes).mock.calls.length).toBe(seedCallsBefore);
+    expect(mockedClampNodes).toHaveBeenCalledTimes(1);
+    expect(mockedClampNodes).toHaveBeenCalledWith(expect.anything(), 800, 340);
+  });
+
+  it("re-seeds (does not merely clamp) when a resize crosses the node-count breakpoint (boundary, regression r2-F2)", async () => {
+    const ctx = fakeCtx();
+    HTMLCanvasElement.prototype.getContext = vi.fn(() => ctx) as unknown as typeof originalGetContext;
+    const { seedNodes: mockedSeedNodes, clampNodes: mockedClampNodes } = await import("@/components/hero/network");
+    const { NetworkCanvas } = await import("@/components/hero/NetworkCanvas");
+    render(<NetworkCanvas />);
+    const seedCallsBefore = vi.mocked(mockedSeedNodes).mock.calls.length;
+
+    // Shrink width across the 768px breakpoint — nodeCountFor now returns 35 instead of
+    // 70, so this genuinely needs a re-seed rather than a clamp.
+    Object.defineProperty(HTMLCanvasElement.prototype, "clientWidth", { value: 400, configurable: true });
+    act(() => {
+      roInstances[0].callback([] as ResizeObserverEntry[], roInstances[0] as unknown as ResizeObserver);
+    });
+
+    expect(vi.mocked(mockedSeedNodes).mock.calls.length).toBe(seedCallsBefore + 1);
+    expect(mockedClampNodes).not.toHaveBeenCalled();
   });
 
   it("disconnects both observers and removes the pointermove listener on unmount (cleanup)", async () => {
