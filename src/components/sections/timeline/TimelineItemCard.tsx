@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { TimelineItem } from "@/lib/data";
 import { formatRange } from "./timeline-utils";
+import { StaggerGroup, StaggerItem } from "@/components/motion";
 
 const CATEGORY_LABELS: Record<TimelineItem["category"], string> = {
   LIFE: "인생",
@@ -38,13 +39,13 @@ export function TimelineItemCard({ item }: { item: TimelineItem }) {
       {item.company && <p className="text-sm text-fg-muted">{item.company.name}</p>}
       <p className="mt-2 text-sm text-fg-muted">{item.description}</p>
       {techStack && techStack.length > 0 && (
-        <ul className="mt-3 flex flex-wrap gap-2">
+        <StaggerGroup as="ul" from="scale" className="mt-3 flex flex-wrap gap-2">
           {techStack.map((tech) => (
-            <li key={tech} className="font-mono text-xs text-fg-muted before:content-['['] after:content-[']']">
+            <StaggerItem key={tech} as="li" className="font-mono text-xs text-fg-muted before:content-['['] after:content-[']']">
               {tech}
-            </li>
+            </StaggerItem>
           ))}
-        </ul>
+        </StaggerGroup>
       )}
     </article>
   );
