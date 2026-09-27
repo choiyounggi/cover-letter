@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { useGsap } from "@/hooks";
+import { useGsap, useReducedMotionPref } from "@/hooks";
 import { gsap } from "@/lib/gsap";
 
 export function DurationMeter({
@@ -14,11 +14,23 @@ export function DurationMeter({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
   const counterRef = useRef<HTMLSpanElement>(null);
+  const reduced = useReducedMotionPref();
 
   useGsap(
     () => {
       if (!wrapperRef.current || !barRef.current || !counterRef.current) return;
       const fraction = maxMonths > 0 ? months / maxMonths : 0;
+
+      // Scrub sets the tween's progress directly from scroll position
+      // (bypassing gsap.globalTimeline.timeScale, unlike a normally-played
+      // tween), so reduced motion must skip the ScrollTrigger entirely and
+      // render the end state directly.
+      if (reduced) {
+        gsap.set(barRef.current, { scaleX: fraction });
+        counterRef.current.textContent = `${months}개월`;
+        return;
+      }
+
       const counter = { value: 0 };
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -44,13 +56,13 @@ export function DurationMeter({
         0,
       );
     },
-    [months, maxMonths],
+    [months, maxMonths, reduced],
     wrapperRef,
   );
 
   return (
     <div ref={wrapperRef} className="mt-2 flex items-center gap-2" data-testid="duration-meter">
-      <div className="h-px flex-1 bg-border">
+      <div aria-hidden className="h-px flex-1 bg-border">
         <div ref={barRef} className="h-px origin-left bg-accent" style={{ transform: "scaleX(0)" }} />
       </div>
       <span ref={counterRef} className="font-mono text-xs tabular-nums text-fg-muted">
