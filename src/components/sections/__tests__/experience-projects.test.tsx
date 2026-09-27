@@ -7,8 +7,35 @@ import { ProjectsSection } from "@/components/sections/projects/ProjectsSection"
 vi.mock("next/image", () => ({
   default: (props: { src: string; alt: string }) => <img src={props.src} alt={props.alt} />,
 }));
+vi.mock("@/hooks", () => ({ useGsap: vi.fn() }));
+vi.mock("@/lib/gsap", () => ({
+  gsap: {
+    to: vi.fn(),
+    fromTo: vi.fn(),
+    timeline: vi.fn(() => ({ fromTo: vi.fn().mockReturnThis(), to: vi.fn().mockReturnThis() })),
+  },
+  ScrollTrigger: { create: vi.fn() },
+}));
 vi.mock("@/components/motion", () => ({
   Reveal: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  StaggerGroup: ({
+    as: Tag = "div",
+    children,
+    className,
+  }: {
+    as?: "div" | "ul" | "li" | "span" | "ol";
+    children?: React.ReactNode;
+    className?: string;
+  }) => <Tag className={className}>{children}</Tag>,
+  StaggerItem: ({
+    as: Tag = "div",
+    children,
+    className,
+  }: {
+    as?: "div" | "ul" | "li" | "span" | "ol";
+    children?: React.ReactNode;
+    className?: string;
+  }) => <Tag className={className}>{children}</Tag>,
 }));
 
 afterEach(() => cleanup());
@@ -78,6 +105,29 @@ describe("ExperienceSection", () => {
   it("wraps each company in a code-frame labelled with its name (normal)", () => {
     const { container } = render(<ExperienceSection companies={[makeCompany({ id: "c1", name: "ACME" })]} />);
     expect(container.querySelector('article.code-frame[data-file="ACME"]')).toBeInTheDocument();
+  });
+
+  it("renders a company with no experiences without crashing and without a DurationMeter (boundary: empty experiences array)", () => {
+    const { container } = render(
+      <ExperienceSection companies={[makeCompany({ id: "c1", name: "Empty Co" }, [])]} />,
+    );
+    expect(container.querySelector('article.code-frame[data-file="Empty Co"]')).toBeInTheDocument();
+    expect(container.querySelector('[data-testid="duration-meter"]')).toBeNull();
+  });
+
+  it("renders achievements and techStack as ul/li, omitting the ul for an empty array (boundary)", () => {
+    const { container } = render(
+      <ExperienceSection
+        companies={[
+          makeCompany({ id: "c1", name: "ACME" }, [
+            makeExperience({ id: "x1", achievements: ["a", "b"], techStack: ["Node.js"] }),
+            makeExperience({ id: "x2", achievements: [], techStack: [] }),
+          ]),
+        ]}
+      />,
+    );
+    expect(container.querySelectorAll("ul")).toHaveLength(2);
+    expect(container.querySelectorAll("li")).toHaveLength(3);
   });
 });
 
