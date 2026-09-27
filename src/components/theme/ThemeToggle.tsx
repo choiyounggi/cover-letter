@@ -8,7 +8,9 @@ export function ThemeToggle({ className }: { className?: string }) {
   const [mounted, setMounted] = useState(false);
   // eslint-disable-next-line react-hooks/set-state-in-effect -- D15: SSR/client mount guard, the documented next-themes hydration-mismatch fix
   useEffect(() => setMounted(true), []);
-  const isDark = (resolvedTheme ?? "dark") === "dark";
+  // Before mount, mirror the server (no storage → dark) so hydration matches even when
+  // localStorage holds "light"; a mismatch would client-re-render the whole root.
+  const isDark = !mounted || (resolvedTheme ?? "dark") === "dark";
   return (
     <button
       type="button"
