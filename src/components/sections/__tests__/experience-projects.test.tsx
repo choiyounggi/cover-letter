@@ -7,7 +7,7 @@ import { ProjectsSection } from "@/components/sections/projects/ProjectsSection"
 vi.mock("next/image", () => ({
   default: (props: { src: string; alt: string }) => <img src={props.src} alt={props.alt} />,
 }));
-vi.mock("@/hooks", () => ({ useGsap: vi.fn() }));
+vi.mock("@/hooks", () => ({ useGsap: vi.fn(), useReducedMotionPref: vi.fn(() => false) }));
 vi.mock("@/lib/gsap", () => ({
   gsap: {
     to: vi.fn(),
