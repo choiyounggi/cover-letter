@@ -126,9 +126,9 @@ const skills = (Object.keys(skillNames) as SkillCategory[]).flatMap((category) =
 );
 
 const companies = [
-  { name: "알스퀘어", sortOrder: 0 },
-  { name: "인포뱅크", logoUrl: "/images/infobank.png", sortOrder: 1 },
-  { name: "대양씨아이에스", sortOrder: 2 },
+  { name: "알스퀘어", logoUrl: "/images/logos/rsquare.png", url: "https://www.rsquare.co.kr", sortOrder: 0 },
+  { name: "인포뱅크", logoUrl: "/images/logos/infobank.png", url: "https://www.infobank.net", sortOrder: 1 },
+  { name: "대양씨아이에스", logoUrl: "/images/logos/dycis.png", url: "https://www.dycis.kr", sortOrder: 2 },
 ];
 
 type SeedExperience = Omit<Prisma.ExperienceCreateManyInput, "companyId">;
@@ -461,6 +461,7 @@ const experiencesByCompany: Record<string, SeedExperience[]> = {
 const projects = [
   {
     title: "dev-loop",
+    imageUrl: "/images/projects/dev-loop.png",
     summary:
       "여러 Claude Code 세션을 병렬로 돌려 계획 → TDD → 독립 감사 → 리뷰까지 진행하는 오케스트레이터 플러그인 (91회 릴리스, 테스트 74개 CI)",
     techStack: ["Claude Code", "Shell", "bats", "GitHub Actions"],
@@ -471,6 +472,7 @@ const projects = [
   },
   {
     title: "groundwork",
+    imageUrl: "/images/projects/groundwork.png",
     summary: "위험 명령 차단·기억 오염 방지 등 AI 에이전트 안전장치 플러그인 4종을 묶은 Claude Code 마켓플레이스",
     techStack: ["Claude Code", "MCP", "Shell"],
     repoUrl: "https://github.com/choiyounggi/groundwork",
@@ -480,6 +482,7 @@ const projects = [
   },
   {
     title: "cliclaw",
+    imageUrl: "/images/projects/cliclaw.png",
     summary: "폰(텔레그램)에서 Claude Code·Codex·Gemini를 원격 조종하고, 위험 명령은 버튼으로 승인받는 CLI (npm 배포)",
     techStack: ["TypeScript", "Bun", "Telegram Bot API", "npm"],
     repoUrl: "https://github.com/choiyounggi/cliclaw",
@@ -490,6 +493,7 @@ const projects = [
   },
   {
     title: "linkly",
+    imageUrl: "/images/projects/linkly.png",
     summary:
       "규칙만 선언하면 실행 가능한 백엔드가 되는 LLM 친화 프로그래밍 언어. 인터프리터와 MLIR 기반 네이티브 컴파일러 구현, RFC 63편·테스트 5,200여 개로 검증 (실험 프로젝트)",
     techStack: ["Python", "MLIR", "LLVM", "MCP"],
@@ -500,6 +504,7 @@ const projects = [
   },
   {
     title: "Apply Mate",
+    imageUrl: "/images/projects/apply-mate.png",
     summary: "채용 공고에 맞춘 이력서·면접 가이드 앱. 지어낸 경력을 걸러내는 필터, 개인정보를 가린 뒤 LLM 전송",
     techStack: ["NestJS", "Prisma", "PostgreSQL", "Expo", "Claude API"],
     startDate: ym("2026-09"),
@@ -508,6 +513,7 @@ const projects = [
   },
   {
     title: "kis-trader",
+    imageUrl: "/images/projects/kis-trader.png",
     summary: "LLM 매매 판단에 비율 상한·주문 금액 상한·전역 정지를 적용한 주식 자동매매 엔진 (npm 배포)",
     techStack: ["Python", "TypeScript", "SQLAlchemy", "KIS OpenAPI"],
     repoUrl: "https://github.com/choiyounggi/auto-trading-bot",
@@ -517,6 +523,7 @@ const projects = [
   },
   {
     title: "청약 알리미",
+    imageUrl: "/images/projects/chungyak-alimi.png",
     summary: "공공 API로 청약 공고를 모아 조건에 맞으면 텔레그램 알림, 라즈베리파이에 CI 자동 배포·HTTPS로 운영 중",
     techStack: ["FastAPI", "PostgreSQL", "GitHub Actions", "Raspberry Pi"],
     repoUrl: "https://github.com/choiyounggi/chungyak-alimi",
@@ -527,6 +534,7 @@ const projects = [
   },
   {
     title: "한국 공공데이터 API",
+    imageUrl: "/images/projects/korea-data.png",
     summary: "공휴일·실거래가 API를 MCP 서버로 만들어 PyPI·MCP Registry에 자동 배포",
     techStack: ["FastAPI", "MCP", "PyPI", "Cloudflare Tunnel"],
     repoUrl: "https://github.com/choiyounggi/korea-data-suite",
@@ -537,6 +545,7 @@ const projects = [
   },
   {
     title: "메차카멜레온 웹",
+    imageUrl: "/images/projects/mechameleon.png",
     summary: "아무 웹페이지 스크린샷 위에서 졸라맨을 위장시켜 숨고 찾는 실시간 멀티플레이 게임",
     techStack: ["TypeScript", "Socket.io", "Playwright", "Canvas"],
     repoUrl: "https://github.com/choiyounggi/mechameleon-web",
