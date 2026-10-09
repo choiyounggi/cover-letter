@@ -40,6 +40,9 @@ const message = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.unstubAllEnvs();
+  vi.stubEnv("TELEGRAM_BOT_TOKEN", "");
+  vi.stubEnv("TELEGRAM_CHAT_ID", "");
 });
 
 describe("submitContact", () => {
@@ -103,6 +106,46 @@ describe("submitContact", () => {
     expect(createMessageMock).toHaveBeenCalledTimes(1);
     expect(sendTelegramMessageMock).not.toHaveBeenCalled();
     expect(markTelegramSentMock).not.toHaveBeenCalled();
+  });
+
+  it("uses env secrets over admin settings without reading settings when both are set (normal)", async () => {
+    vi.stubEnv("TELEGRAM_BOT_TOKEN", " env-tok ");
+    vi.stubEnv("TELEGRAM_CHAT_ID", "env-chat");
+    createMessageMock.mockResolvedValue(message);
+    sendTelegramMessageMock.mockResolvedValue({ ok: true });
+    markTelegramSentMock.mockResolvedValue(message);
+
+    const result = await submitContact(idle, fd({ name: "최영기", email: "test@example.com", content: "안녕하세요" }));
+
+    expect(result).toEqual({ status: "ok" });
+    expect(getSettingsMock).not.toHaveBeenCalled();
+    expect(sendTelegramMessageMock).toHaveBeenCalledWith({ botToken: "env-tok", chatId: "env-chat", text: "msg" });
+    expect(markTelegramSentMock).toHaveBeenCalledWith(message.id);
+  });
+
+  it("still delivers via env secrets when the settings table is unreachable (async failure)", async () => {
+    vi.stubEnv("TELEGRAM_BOT_TOKEN", "env-tok");
+    vi.stubEnv("TELEGRAM_CHAT_ID", "env-chat");
+    createMessageMock.mockResolvedValue(message);
+    getSettingsMock.mockRejectedValue(new Error("db down"));
+    sendTelegramMessageMock.mockResolvedValue({ ok: true });
+
+    const result = await submitContact(idle, fd({ name: "최영기", email: "test@example.com", content: "안녕하세요" }));
+
+    expect(result).toEqual({ status: "ok" });
+    expect(sendTelegramMessageMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("falls back to admin settings when only one env secret is set or it is blank (boundary)", async () => {
+    vi.stubEnv("TELEGRAM_BOT_TOKEN", "env-tok");
+    vi.stubEnv("TELEGRAM_CHAT_ID", "   ");
+    createMessageMock.mockResolvedValue(message);
+    getSettingsMock.mockResolvedValue({ "telegram.botToken": "db-tok", "telegram.chatId": "db-chat", "site.ogImageUrl": "" });
+    sendTelegramMessageMock.mockResolvedValue({ ok: true });
+
+    await submitContact(idle, fd({ name: "최영기", email: "test@example.com", content: "안녕하세요" }));
+
+    expect(sendTelegramMessageMock).toHaveBeenCalledWith({ botToken: "db-tok", chatId: "db-chat", text: "msg" });
   });
 
   it("returns a generic message with no internals when the DB write throws (error)", async () => {
