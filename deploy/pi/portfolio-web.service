@@ -6,6 +6,9 @@ After=network-online.target
 Type=exec
 # deploy.sh swaps this symlink to the newest release before restarting.
 WorkingDirectory=%h/portfolio/current
+# The Pi has no IPv6 route and ~270ms to api.telegram.org; Node's default 250ms
+# per-address attempt then fails every address with ETIMEDOUT.
+Environment=NODE_OPTIONS=--network-family-autoselection-attempt-timeout=1000
 ExecStart=/usr/bin/node node_modules/next/dist/bin/next start -p 3102 -H 127.0.0.1
 Restart=always
 RestartSec=10
