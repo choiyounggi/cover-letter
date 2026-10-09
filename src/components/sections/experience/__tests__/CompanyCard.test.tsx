@@ -13,7 +13,9 @@ vi.mock("@/lib/gsap", () => {
 });
 
 vi.mock("next/image", () => ({
-  default: (props: { src: string; alt: string }) => <img src={props.src} alt={props.alt} />,
+  default: (props: { src: string; alt: string; className?: string }) => (
+    <img src={props.src} alt={props.alt} className={props.className} />
+  ),
 }));
 
 vi.mock("@/components/motion", () => ({
@@ -79,6 +81,28 @@ function makeCompany(overrides: Partial<Company> = {}): Company {
 }
 
 describe("CompanyCard", () => {
+  it("fits a non-square logo inside the circle on a white backdrop instead of stretching it (normal)", async () => {
+    const { CompanyCard } = await import("@/components/sections/experience/CompanyCard");
+    const { getByAltText } = render(
+      <CompanyCard
+        company={makeCompany({ logoUrl: "/images/logos/wide.png" })}
+        experiences={[makeExperience()]}
+        maxMonths={6}
+      />,
+    );
+
+    expect(getByAltText("ACME")).toHaveClass("rounded-full", "object-contain", "bg-white");
+  });
+
+  it("renders no logo image when logoUrl is null (boundary)", async () => {
+    const { CompanyCard } = await import("@/components/sections/experience/CompanyCard");
+    const { queryByAltText } = render(
+      <CompanyCard company={makeCompany()} experiences={[makeExperience()]} maxMonths={6} />,
+    );
+
+    expect(queryByAltText("ACME")).toBeNull();
+  });
+
   it("creates one header-typing gsap.to tween per card, targeting the article with once:true (normal)", async () => {
     const { CompanyCard } = await import("@/components/sections/experience/CompanyCard");
     const { container } = render(

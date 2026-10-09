@@ -31,7 +31,7 @@ export function TimelineItemCard({ item }: { item: TimelineItem }) {
             alt={item.company.name}
             width={28}
             height={28}
-            className="h-[28px] w-[28px] rounded-full"
+            className="h-[28px] w-[28px] rounded-full bg-white object-contain"
           />
         )}
         <h3 className="font-display text-lg">{item.title}</h3>

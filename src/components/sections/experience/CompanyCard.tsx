@@ -52,7 +52,7 @@ export function CompanyCard({
               alt={company.name}
               width={40}
               height={40}
-              className="h-[40px] w-[40px] rounded-full"
+              className="h-[40px] w-[40px] rounded-full bg-white object-contain"
             />
           )}
           {company.url ? (
