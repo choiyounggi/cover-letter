@@ -1,0 +1,52 @@
+# Raspberry Pi deploy: runs after ci succeeds on main (or manually), SSHes into
+# the Pi, fetches the commit, and hands off to deploy/pi/deploy.sh.
+# Secrets: PI_HOST, PI_USER, PI_PORT, PI_SSH_KEY, PI_HOST_FINGERPRINT, PORTFOLIO_DB_PASSWORD,
+#          AUTH_SECRET, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+
+name: deploy
+
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-pi-portfolio
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # workflow_run's branch filter matches a fork PR's branch named "main" too, so require a push to this repo.
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1
+        env:
+          DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          PORTFOLIO_DB_PASSWORD: ${{ secrets.PORTFOLIO_DB_PASSWORD }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        with:
+          host: ${{ secrets.PI_HOST }}
+          username: ${{ secrets.PI_USER }}
+          key: ${{ secrets.PI_SSH_KEY }}
+          port: ${{ secrets.PI_PORT }}
+          fingerprint: ${{ secrets.PI_HOST_FINGERPRINT }}
+          command_timeout: 30m
+          envs: DEPLOY_SHA,PORTFOLIO_DB_PASSWORD,AUTH_SECRET,TELEGRAM_BOT_TOKEN,TELEGRAM_CHAT_ID
+          script: |
+            set -e
+            REPO="$HOME/portfolio/repo"
+            [ -d "$REPO/.git" ] || git clone https://github.com/choiyounggi/cover-letter.git "$REPO"
+            git -C "$REPO" fetch --quiet origin
+            git -C "$REPO" merge-base --is-ancestor "$DEPLOY_SHA" origin/main || { echo "not on main: $DEPLOY_SHA"; exit 1; }
+            git -C "$REPO" checkout --quiet --detach "$DEPLOY_SHA"
+            bash "$REPO/deploy/pi/deploy.sh" "$DEPLOY_SHA"
