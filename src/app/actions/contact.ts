@@ -12,6 +12,15 @@ export type ContactState =
 
 const GENERIC = "잠시 후 다시 시도해 주세요.";
 
+// Env secrets win when both are set, so delivery does not depend on the admin settings row.
+async function resolveTelegramConfig(): Promise<{ botToken: string; chatId: string }> {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim() ?? "";
+  const chatId = process.env.TELEGRAM_CHAT_ID?.trim() ?? "";
+  if (botToken && chatId) return { botToken, chatId };
+  const settings = await getSettings();
+  return { botToken: settings["telegram.botToken"] ?? "", chatId: settings["telegram.chatId"] ?? "" };
+}
+
 export async function submitContact(_prev: ContactState, formData: FormData): Promise<ContactState> {
   const raw = Object.fromEntries(formData) as Record<string, unknown>;
   if (typeof raw.website === "string" && raw.website.length > 0) return { status: "ok" }; // honeypot
@@ -30,10 +39,8 @@ export async function submitContact(_prev: ContactState, formData: FormData): Pr
   }
 
   try {
-    const settings = await getSettings();
     const sent = await sendTelegramMessage({
-      botToken: settings["telegram.botToken"] ?? "",
-      chatId: settings["telegram.chatId"] ?? "",
+      ...(await resolveTelegramConfig()),
       text: formatContactMessage({
         name: message.name,
         email: message.email,

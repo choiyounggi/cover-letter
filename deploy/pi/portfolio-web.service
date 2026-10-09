@@ -1,0 +1,14 @@
+[Unit]
+Description=Portfolio site (Next.js) -> 127.0.0.1:3102
+After=network-online.target
+
+[Service]
+Type=exec
+# deploy.sh swaps this symlink to the newest release before restarting.
+WorkingDirectory=%h/portfolio/current
+ExecStart=/usr/bin/node node_modules/next/dist/bin/next start -p 3102 -H 127.0.0.1
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

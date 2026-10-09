@@ -1,0 +1,14 @@
+[Unit]
+Description=cloudflared tunnel (portfolio) -> portfolio.korea-data.cloud
+After=network-online.target portfolio-web.service
+Wants=portfolio-web.service
+
+[Service]
+Type=exec
+# One-time setup: copy the tunnel credentials JSON and portfolio-config.yml into ~/.cloudflared.
+ExecStart=/usr/bin/cloudflared --no-autoupdate --config %h/.cloudflared/portfolio-config.yml tunnel run portfolio
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target
