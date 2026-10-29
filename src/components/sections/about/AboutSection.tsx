@@ -2,6 +2,7 @@ import Image from "next/image";
 import type { Link, Profile } from "@/generated/prisma/client";
 import { Reveal, Magnetic, Parallax } from "@/components/motion";
 import { SectionHeading } from "@/components/layout/SectionHeading";
+import { isRemoteSrc } from "@/lib/image-src";
 
 function initials(name: string): string {
   return name.trim().slice(0, 2);
@@ -21,6 +22,7 @@ export function AboutSection({ profile, links }: { profile: Profile; links: Link
                 alt={profile.name}
                 width={320}
                 height={320}
+                unoptimized={isRemoteSrc(profile.avatarUrl)}
                 className="block h-[320px] w-[320px] object-cover"
               />
             ) : (
