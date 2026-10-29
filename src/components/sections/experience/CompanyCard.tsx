@@ -5,6 +5,7 @@ import Image from "next/image";
 import type { Company, Experience } from "@/generated/prisma/client";
 import { useGsap } from "@/hooks";
 import { gsap } from "@/lib/gsap";
+import { isRemoteSrc } from "@/lib/image-src";
 import { StaggerGroup, StaggerItem } from "@/components/motion";
 import { formatRange } from "@/components/sections/timeline/timeline-utils";
 import { DurationMeter } from "./DurationMeter";
@@ -52,6 +53,7 @@ export function CompanyCard({
               alt={company.name}
               width={40}
               height={40}
+              unoptimized={isRemoteSrc(company.logoUrl)}
               className="h-[40px] w-[40px] rounded-full bg-white object-contain"
             />
           )}

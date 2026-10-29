@@ -1,12 +1,19 @@
 import Image from "next/image";
 import type { Project } from "@/generated/prisma/client";
+import { isRemoteSrc } from "@/lib/image-src";
 
 export function ProjectCard({ project }: { project: Project }) {
   return (
     <article className="code-frame overflow-hidden" data-file={project.title}>
       {project.imageUrl ? (
         <div className="relative aspect-video w-full">
-          <Image src={project.imageUrl} alt={project.title} fill className="object-cover" />
+          <Image
+            src={project.imageUrl}
+            alt={project.title}
+            fill
+            unoptimized={isRemoteSrc(project.imageUrl)}
+            className="object-cover"
+          />
         </div>
       ) : (
         <div

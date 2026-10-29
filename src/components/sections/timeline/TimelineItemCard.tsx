@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { TimelineItem } from "@/lib/data";
+import { isRemoteSrc } from "@/lib/image-src";
 import { formatRange } from "./timeline-utils";
 import { StaggerGroup, StaggerItem } from "@/components/motion";
 
@@ -31,6 +32,7 @@ export function TimelineItemCard({ item }: { item: TimelineItem }) {
             alt={item.company.name}
             width={28}
             height={28}
+            unoptimized={isRemoteSrc(item.company.logoUrl)}
             className="h-[28px] w-[28px] rounded-full bg-white object-contain"
           />
         )}
