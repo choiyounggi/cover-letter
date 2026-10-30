@@ -1,18 +1,14 @@
 import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { navVisibility } from "@/components/layout/nav-visibility";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { Nav } from "@/components/layout/Nav";
 import { Footer } from "@/components/layout/Footer";
 import { SectionHeading } from "@/components/layout/SectionHeading";
-import { ScrollTrigger } from "@/lib/gsap";
 
 vi.mock("@/components/motion", () => ({
   Magnetic: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   Reveal: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-vi.mock("@/hooks", () => ({ useGsap: vi.fn((cb: () => void) => cb()) }));
-vi.mock("@/lib/gsap", () => ({ ScrollTrigger: { create: vi.fn(() => ({ kill: vi.fn() })) } }));
 
 const setTheme = vi.fn();
 vi.mock("next-themes", () => ({ useTheme: () => ({ resolvedTheme: "dark", setTheme }) }));
@@ -20,20 +16,6 @@ vi.mock("next-themes", () => ({ useTheme: () => ({ resolvedTheme: "dark", setThe
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
-});
-
-describe("navVisibility (pure)", () => {
-  it("hides while scrolling down past the top threshold (normal)", () => {
-    expect(navVisibility(1, 500)).toBe("hidden");
-  });
-
-  it("stays visible while scrolling up (normal)", () => {
-    expect(navVisibility(-1, 500)).toBe("visible");
-  });
-
-  it("stays visible near the top regardless of direction (boundary: y < 40)", () => {
-    expect(navVisibility(1, 10)).toBe("visible");
-  });
 });
 
 describe("Nav", () => {
@@ -67,18 +49,13 @@ describe("Nav", () => {
     expect(menuButton).toHaveAttribute("aria-expanded", "true");
   });
 
-  it("wires ScrollTrigger's onUpdate to navVisibility and toggles -translate-y-full (D7 scroll wiring)", () => {
+  it("stays pinned to the top and never hides on scroll (normal)", () => {
     render(<Nav />);
     const header = screen.getByRole("banner");
-    expect(header.className).not.toContain("-translate-y-full");
+    expect(header.className).toContain("fixed");
+    expect(header.className).toContain("top-0");
 
-    const onUpdate = vi.mocked(ScrollTrigger.create).mock.calls[0][0]?.onUpdate;
-    expect(onUpdate).toBeInstanceOf(Function);
-
-    act(() => onUpdate?.({ direction: 1, scroll: () => 500 } as never));
-    expect(header.className).toContain("-translate-y-full");
-
-    act(() => onUpdate?.({ direction: -1, scroll: () => 500 } as never));
+    fireEvent.scroll(window, { target: { scrollY: 2000 } });
     expect(header.className).not.toContain("-translate-y-full");
   });
 });
