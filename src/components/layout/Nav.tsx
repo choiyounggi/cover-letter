@@ -1,12 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { useGsap } from "@/hooks";
-import { ScrollTrigger } from "@/lib/gsap";
+import { useState } from "react";
 import { Magnetic } from "@/components/motion";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { cn } from "@/lib/utils";
-import { navVisibility } from "./nav-visibility";
 
 const LINKS = [
   { label: "소개", href: "#about" },
@@ -18,33 +15,10 @@ const LINKS = [
 ];
 
 export function Nav() {
-  const navRef = useRef<HTMLElement>(null);
-  const [hidden, setHidden] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  useGsap(
-    () => {
-      const trigger = ScrollTrigger.create({
-        start: 0,
-        end: "max",
-        onUpdate: (self) => {
-          setHidden(navVisibility(self.direction as 1 | -1, self.scroll()) === "hidden");
-        },
-      });
-      return () => trigger.kill();
-    },
-    [],
-    navRef,
-  );
-
   return (
-    <header
-      ref={navRef}
-      className={cn(
-        "fixed inset-x-0 top-0 z-40 border-b border-border bg-bg/60 backdrop-blur-md transition-transform duration-300",
-        hidden && "-translate-y-full",
-      )}
-    >
+    <header className="fixed inset-x-0 top-0 z-40 border-b border-border bg-bg/60 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <a href="#" className="font-mono text-base font-semibold tracking-tight text-fg">
           ~/yg

@@ -134,13 +134,22 @@ describe("messageInputSchema", () => {
     expect(result.content).toBe("hi");
   });
 
-  it("rejects an invalid email", () => {
-    expect(() => messageInputSchema.parse({ ...base, email: "x" })).toThrow();
+  it("rejects an invalid email with the Korean format message", () => {
+    expect(() => messageInputSchema.parse({ ...base, email: "x" })).toThrow("올바른 이메일 형식이 아니에요.");
   });
 
-  it("boundary: content of exactly 5000 chars passes, honeypot fails when filled", () => {
-    const ok5000 = "a".repeat(5000);
-    expect(messageInputSchema.parse({ ...base, content: ok5000 }).content).toBe(ok5000);
+  it("boundary: content of exactly 300 chars passes, 301 fails, honeypot fails when filled", () => {
+    const ok300 = "a".repeat(300);
+    expect(messageInputSchema.parse({ ...base, content: ok300 }).content).toBe(ok300);
+    expect(() => messageInputSchema.parse({ ...base, content: "a".repeat(301) })).toThrow(
+      "내용은 300자 이내로 입력해 주세요.",
+    );
     expect(() => messageInputSchema.parse({ ...base, website: "bot-filled" })).toThrow();
+  });
+
+  it("boundary: CRLF line breaks from multipart count as one char each and are stored as LF", () => {
+    const crlf300 = "a\r\n".repeat(149) + "ab"; // 300 chars once each \r\n becomes \n
+    expect(messageInputSchema.parse({ ...base, content: crlf300 }).content).toBe("a\n".repeat(149) + "ab");
+    expect(() => messageInputSchema.parse({ ...base, content: crlf300 + "c" })).toThrow();
   });
 });
